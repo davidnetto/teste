@@ -639,9 +639,17 @@ section { padding: 60px 24px; }
 
 @media (max-width: 768px) {
     .field-row { grid-template-columns: 1fr; }
+    
+    /* Remover backdrop-filter para impedir que o 'position: fixed' do menu inferior fique preso ao header */
+    #main-header {
+        backdrop-filter: none !important;
+        background: #fff !important;
+    }
+    
     .header-inner { 
         padding: 10px 12px; 
         gap: 12px;
+        position: relative; /* Para o carrinho absoluto */
     }
     .hero h2 { font-size: 2rem; }
     .section-header h2 { font-size: 1.6rem; }
@@ -690,10 +698,19 @@ section { padding: 60px 24px; }
         color: var(--green-dark) !important;
     }
     
+    /* Encurtar o texto Catálogo Completo no mobile */
+    #main-header nav a[href="catalogo.html"] {
+        font-size: 0 !important;
+    }
+    #main-header nav a[href="catalogo.html"]::after {
+        content: 'Catálogo';
+        font-size: 0.65rem;
+    }
+    
     /* Injetar ícones no Mobile via pseudo-elementos */
-    #main-header nav a[href="index.html"]::before { content: '🏠'; font-size: 1.3rem; filter: saturate(0.8); }
-    #main-header nav a[href="catalogo.html"]::before { content: '📖'; font-size: 1.3rem; filter: saturate(0.8); }
-    #main-header nav a[href="index.html#entrega"]::before { content: '🚚'; font-size: 1.3rem; filter: saturate(0.8); }
+    #main-header nav a[href="index.html"]::before { content: '🏠'; font-size: 1.3rem !important; filter: saturate(0.8); }
+    #main-header nav a[href="catalogo.html"]::before { content: '📖'; font-size: 1.3rem !important; filter: saturate(0.8); }
+    #main-header nav a[href="index.html#entrega"]::before { content: '🚚'; font-size: 1.3rem !important; filter: saturate(0.8); }
     
     /* User Area Icons */
     #userArea a[href="login.html"]::before { content: '👤'; font-size: 1.3rem; filter: saturate(0.8); }
@@ -701,24 +718,29 @@ section { padding: 60px 24px; }
     #userArea a[href="admin.html"]::before { content: '⚙️'; font-size: 1.3rem; filter: saturate(0.8); }
     #userArea button::before { content: '🚪'; font-size: 1.3rem; filter: saturate(0.8); }
 
-    /* Ajuste do botão do carrinho para ficar no Topo Direto (Header) */
+    /* Ajuste do botão do carrinho para ficar no Topo Direito (Header) */
     .cart-btn {
         position: fixed !important;
-        top: 12px;
-        right: 16px;
+        top: 10px;
+        right: 12px;
         bottom: auto !important;
         left: auto !important;
-        padding: 8px 12px !important;
+        padding: 6px 12px !important;
         border-radius: 30px !important;
         font-size: 0.85rem !important;
         z-index: 1050;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        box-shadow: none !important;
         margin: 0 !important;
+        background: transparent !important;
+        color: var(--green-dark) !important;
+        border: 1px solid var(--green-pale) !important;
     }
     
     .cart-count {
         font-size: 0.65rem !important;
         padding: 2px 6px !important;
+        position: static !important; /* Deixa alinhar naturalmente ao lado do emoji */
+        margin-left: 4px;
     }
     
     .products-grid {
