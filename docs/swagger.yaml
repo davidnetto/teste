@@ -1,0 +1,825 @@
+basePath: /
+definitions:
+  lalamove.ChangeDriverRequest:
+    properties:
+      data:
+        properties:
+          reason:
+            type: string
+        type: object
+    type: object
+  lalamove.CitiesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/lalamove.City'
+        type: array
+    type: object
+  lalamove.City:
+    properties:
+      locode:
+        type: string
+      name:
+        type: string
+      services:
+        items:
+          $ref: '#/definitions/lalamove.Service'
+        type: array
+    type: object
+  lalamove.ContactInfo:
+    properties:
+      name:
+        type: string
+      phone:
+        type: string
+      remarks:
+        type: string
+      stopId:
+        type: string
+    type: object
+  lalamove.Coordinates:
+    properties:
+      lat:
+        type: string
+      lng:
+        type: string
+    type: object
+  lalamove.DriverLocation:
+    properties:
+      lat:
+        type: string
+      lng:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  lalamove.DriverResponse:
+    properties:
+      data:
+        properties:
+          coordinates:
+            $ref: '#/definitions/lalamove.DriverLocation'
+          driverId:
+            type: string
+          name:
+            type: string
+          phone:
+            type: string
+          photo:
+            type: string
+          plateNumber:
+            type: string
+        type: object
+    type: object
+  lalamove.EditOrderRequest:
+    properties:
+      data:
+        properties:
+          stops:
+            items:
+              $ref: '#/definitions/lalamove.EditOrderStop'
+            type: array
+        type: object
+    type: object
+  lalamove.EditOrderStop:
+    properties:
+      address:
+        type: string
+      coordinates:
+        $ref: '#/definitions/lalamove.Coordinates'
+      name:
+        type: string
+      phone:
+        type: string
+      remarks:
+        type: string
+    type: object
+  lalamove.Item:
+    properties:
+      categories:
+        items:
+          type: string
+        type: array
+      handlingInstructions:
+        items:
+          type: string
+        type: array
+      quantity:
+        type: integer
+      weight:
+        type: string
+    type: object
+  lalamove.Metadata:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    type: object
+  lalamove.OrderRequest:
+    properties:
+      data:
+        properties:
+          isPODEnabled:
+            type: boolean
+          metadata:
+            items:
+              $ref: '#/definitions/lalamove.Metadata'
+            type: array
+          quotationId:
+            type: string
+          recipients:
+            items:
+              $ref: '#/definitions/lalamove.ContactInfo'
+            type: array
+          sender:
+            $ref: '#/definitions/lalamove.ContactInfo'
+        type: object
+    type: object
+  lalamove.OrderResponse:
+    properties:
+      data:
+        properties:
+          distance:
+            properties:
+              unit:
+                type: string
+              value:
+                type: string
+            type: object
+          driverId:
+            type: string
+          metadata:
+            items:
+              $ref: '#/definitions/lalamove.Metadata'
+            type: array
+          orderId:
+            type: string
+          priceBreakdown:
+            $ref: '#/definitions/lalamove.PriceBreakdown'
+          quotationId:
+            type: string
+          shareLink:
+            type: string
+          status:
+            type: string
+          stops:
+            items:
+              $ref: '#/definitions/lalamove.OrderStop'
+            type: array
+        type: object
+    type: object
+  lalamove.OrderStop:
+    properties:
+      POD:
+        $ref: '#/definitions/lalamove.POD'
+      address:
+        type: string
+      coordinates:
+        $ref: '#/definitions/lalamove.Coordinates'
+      name:
+        type: string
+      phone:
+        type: string
+      remarks:
+        type: string
+      stopId:
+        type: string
+    type: object
+  lalamove.POD:
+    properties:
+      image:
+        type: string
+      status:
+        type: string
+    type: object
+  lalamove.PriceBreakdown:
+    properties:
+      base:
+        type: string
+      currency:
+        type: string
+      total:
+        type: string
+    type: object
+  lalamove.PriorityFeeRequest:
+    properties:
+      data:
+        properties:
+          priorityFee:
+            type: string
+        type: object
+    type: object
+  lalamove.QuotationRequest:
+    properties:
+      data:
+        properties:
+          isRouteOptimized:
+            type: boolean
+          item:
+            $ref: '#/definitions/lalamove.Item'
+          language:
+            type: string
+          scheduleAt:
+            type: string
+          serviceType:
+            type: string
+          specialRequests:
+            items:
+              type: string
+            type: array
+          stops:
+            items:
+              $ref: '#/definitions/lalamove.Stop'
+            type: array
+        type: object
+    type: object
+  lalamove.QuotationResponse:
+    properties:
+      data:
+        properties:
+          distance:
+            properties:
+              unit:
+                type: string
+              value:
+                type: string
+            type: object
+          expiresAt:
+            type: string
+          isRouteOptimized:
+            type: boolean
+          priceBreakdown:
+            $ref: '#/definitions/lalamove.PriceBreakdown'
+          quotationId:
+            type: string
+          scheduleAt:
+            type: string
+          serviceType:
+            type: string
+          specialRequests:
+            items:
+              type: string
+            type: array
+          stops:
+            items:
+              $ref: '#/definitions/lalamove.QuotationStop'
+            type: array
+        type: object
+    type: object
+  lalamove.QuotationStop:
+    properties:
+      address:
+        type: string
+      coordinates:
+        $ref: '#/definitions/lalamove.Coordinates'
+      stopId:
+        type: string
+    type: object
+  lalamove.Service:
+    properties:
+      description:
+        type: string
+      key:
+        type: string
+      specialRequests:
+        items:
+          $ref: '#/definitions/lalamove.SpecialRequest'
+        type: array
+    type: object
+  lalamove.SpecialRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  lalamove.Stop:
+    properties:
+      address:
+        type: string
+      coordinates:
+        $ref: '#/definitions/lalamove.Coordinates'
+    type: object
+  lalamove.WebhookRequest:
+    properties:
+      data:
+        properties:
+          url:
+            type: string
+        type: object
+    type: object
+  lalamove.WebhookResponse:
+    properties:
+      data:
+        properties:
+          url:
+            type: string
+        type: object
+    type: object
+  main.CreateUserRequest:
+    properties:
+      email:
+        example: joao@email.com
+        type: string
+      name:
+        example: João Silva
+        type: string
+    type: object
+  main.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: CRUD de usuários + integração Lalamove sandbox.
+  title: User & Delivery API
+  version: "1.0"
+paths:
+  /delivery/cities:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lalamove.CitiesResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Lista cidades e tipos de serviço disponíveis
+      tags:
+      - delivery
+  /delivery/orders:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do pedido
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/lalamove.OrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/lalamove.OrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cria um pedido de entrega
+      tags:
+      - delivery
+  /delivery/orders/{id}:
+    delete:
+      parameters:
+      - description: ID do pedido
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cancela um pedido
+      tags:
+      - delivery
+    get:
+      parameters:
+      - description: ID do pedido
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lalamove.OrderResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Busca detalhes de um pedido
+      tags:
+      - delivery
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do pedido
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Novos destinos
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/lalamove.EditOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lalamove.OrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Edita os destinos de um pedido
+      tags:
+      - delivery
+  /delivery/orders/{id}/priority-fee:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do pedido
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Valor da gorjeta
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/lalamove.PriorityFeeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lalamove.OrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Adiciona gorjeta para atrair motorista
+      tags:
+      - delivery
+  /delivery/orders/{orderId}/drivers/{driverId}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do pedido
+        in: path
+        name: orderId
+        required: true
+        type: string
+      - description: ID do motorista
+        in: path
+        name: driverId
+        required: true
+        type: string
+      - description: Motivo da troca
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/lalamove.ChangeDriverRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Solicita troca de motorista
+      tags:
+      - delivery
+    get:
+      parameters:
+      - description: ID do pedido
+        in: path
+        name: orderId
+        required: true
+        type: string
+      - description: ID do motorista
+        in: path
+        name: driverId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lalamove.DriverResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Busca informações do motorista
+      tags:
+      - delivery
+  /delivery/quotations:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da cotação
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/lalamove.QuotationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lalamove.QuotationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Solicita cotação de entrega
+      tags:
+      - delivery
+  /delivery/quotations/{id}:
+    get:
+      parameters:
+      - description: ID da cotação
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lalamove.QuotationResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Busca uma cotação pelo ID
+      tags:
+      - delivery
+  /delivery/webhook:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: URL do webhook
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/lalamove.WebhookRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lalamove.WebhookResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Configura URL de webhook para notificações
+      tags:
+      - delivery
+  /users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.User'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Lista todos os usuários
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do usuário
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cria um novo usuário
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Remove um usuário pelo ID
+      tags:
+      - users
+    get:
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.User'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Busca um usuário pelo ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados do usuário
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Atualiza um usuário pelo ID
+      tags:
+      - users
+swagger: "2.0"

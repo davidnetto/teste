@@ -1,0 +1,19 @@
+{
+  "data": {
+    "quotationId": "3484472225955292216",
+    "sender": {
+      "stopId": "3484472225955292217",
+      "name": "David",
+      "phone": "+5511999999999"
+    },
+    "recipients": [
+      {
+        "stopId": "3484472225955292218",
+        "name": "Cliente Teste",
+        "phone": "+5511888888888",
+        "remarks": "Entregar na portaria"
+      }
+    ],
+    "isPODEnabled": true
+  }
+}

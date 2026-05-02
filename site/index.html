@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flor Em Tina — Plantas, Vasos & Jardim</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js"></script>
+    <link rel="stylesheet" href="styles.css?v=1.2">
+    <style>
+        /* CSS de EMERGÊNCIA para as imagens não cortarem */
+        .carousel-img {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .product-image-wrapper {
+            height: 220px !important;
+            background: #fff !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 10px !important;
+            overflow: hidden !important;
+        }
+        .product-image-wrapper img {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
+            display: block !important;
+            margin: auto !important;
+        }
+        .filter-bar {
+            max-width: 1300px;
+            margin: 0 auto 30px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 18px;
+            border-radius: 30px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: var(--text-medium);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--green-medium);
+            color: white;
+            border-color: var(--green-medium);
+        }
+        .delivery-alert {
+            background: var(--green-pale);
+            border-left: 4px solid var(--green-medium);
+            padding: 16px 20px;
+            border-radius: 12px;
+            max-width: 800px;
+            margin: 30px auto 0;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+        footer {
+            background: var(--green-dark);
+            color: white;
+            padding: 40px 24px 20px;
+            margin-top: 40px;
+        }
+        .footer-inner {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 40px;
+        }
+        footer h3, footer h4 {
+            margin-bottom: 12px;
+            font-family: 'Playfair Display', serif;
+        }
+        footer a {
+            display: block;
+            color: rgba(255,255,255,0.85);
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+        .footer-bottom {
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            padding-top: 16px;
+            margin-top: 30px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        @media (max-width: 768px) {
+            .footer-inner { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header id="main-header" data-turbo-permanent>
+    <div class="header-inner">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">🌸</div>
+            <div class="logo-text"><h1>Flor Em Tina</h1><span>Plantas & Jardim</span></div>
+        </a>
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="catalogo.html">Catálogo Completo</a>
+            <a href="index.html#entrega">Entrega</a>
+            <span id="userArea" style="display: flex; gap: 8px; align-items: center;"></span>
+            <button class="cart-btn" onclick="toggleCart()">🛒 <span class="cart-count" id="cartCount">0</span></button>
+        </nav>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="hero-inner">
+        <h2>Traga a <span>Natureza</span> para o seu Lar 🌿</h2>
+        <p>Plantas saudáveis, vasos artesanais e tudo para o seu jardim — com entrega rápida em São Paulo, Guarulhos e ABC.</p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="#produtos" class="btn btn-ghost">Destaques ✨</a>
+            <a href="catalogo.html" class="btn btn-primary">Catálogo Completo 📖</a>
+        </div>
+    </div>
+</section>
+
+<section id="produtos">
+    <div class="section-header">
+        <span class="tag">Catálogo</span>
+        <h2>Nossos Produtos</h2>
+        <p>Escolha por categoria — clique em uma categoria-pai para ver subcategorias.</p>
+    </div>
+    <div class="filter-bar" id="filterBar"></div>
+    <div class="filter-bar" id="subFilterBar" style="display: none;"></div>
+    <div class="products-grid" id="productsGrid">
+        <p class="muted text-center" style="grid-column: 1/-1;">Carregando catálogo...</p>
+    </div>
+</section>
+
+<section id="entrega">
+    <div class="section-header">
+        <span class="tag">Como Funciona</span>
+        <h2>Entrega Local</h2>
+        <p>Trabalhamos com motoboys via Lalamove para entrega rápida. Você acompanha em tempo real pelo mapa.</p>
+    </div>
+    <div class="delivery-alert">
+        <span style="font-size:1.8rem;">📍</span>
+        <div><strong>Área de Cobertura:</strong> São Paulo, Guarulhos, ABC, Osasco, Barueri e cidades vizinhas.</div>
+    </div>
+</section>
+
+<!-- POPUP DE CEP (abre ao carregar) -->
+<div class="overlay" id="cepOverlay">
+    <div class="modal">
+        <div class="modal-icon">📍</div>
+        <h2>Antes de continuar...</h2>
+        <p>Digite seu CEP para verificar se entregamos na sua região:</p>
+        <div class="field">
+            <input type="text" id="cepFirstInput" placeholder="00000-000" maxlength="9" oninput="this.value = maskCEP(this.value)">
+        </div>
+        <div class="error-msg" id="cepFirstError"></div>
+        <div class="success-msg" id="cepFirstSuccess"></div>
+        <div style="display:flex; gap:10px; margin-top: 12px;">
+            <button class="btn btn-ghost" style="flex:1" onclick="skipCep()">Pular</button>
+            <button class="btn btn-primary" style="flex:2" onclick="checkFirstCep()">Verificar 🔍</button>
+        </div>
+    </div>
+</div>
+
+<!-- CARRINHO -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+    <div class="cart-header">
+        <h3>🛒 Seu Carrinho</h3>
+        <button class="cart-close" onclick="toggleCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer">
+        <div class="cart-total">
+            <span>Subtotal:</span>
+            <strong id="cartTotal">R$ 0,00</strong>
+        </div>
+        <p class="muted" id="consultNote" style="display:none; margin-bottom: 12px; font-size: 0.8rem;">
+            ⚠️ Há itens "sob consulta" no carrinho. Iremos calcular o valor e entrar em contato.
+        </p>
+        <button class="btn btn-primary checkout-btn" onclick="goToCheckout()">Finalizar Pedido 💚</button>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-inner">
+        <div>
+            <h3>🌸 Flor Em Tina</h3>
+            <p style="font-size: 0.9rem; opacity: 0.85;">Sua loja completa de plantas, vasos e tudo para o jardim. Entrega via app ou retirada na loja.</p>
+        </div>
+        <div>
+            <h4>Atalhos</h4>
+            <a href="#produtos">Produtos</a>
+            <a href="#entrega">Entrega</a>
+            <a href="login.html">Minha Conta</a>
+        </div>
+        <div>
+            <h4>Contato</h4>
+            <a href="https://wa.me/5511958828196">📱 (11) 95882-8196</a>
+            <a href="#">📧 contato@florentina.com.br</a>
+        </div>
+    </div>
+    <div class="footer-bottom">© 2026 Florentina — Todos os direitos reservados</div>
+</footer>
+
+<script src="api.js"></script>
+<script>
+let categoriesTree = [];
+let activeRootCategoryId = null;
+let activeSubCategoryId = null;
+let allProducts = [];
+
+// ============ CEP POPUP ============
+function showCepOverlay() {
+    document.getElementById('cepOverlay').classList.add('show');
+}
+function hideCepOverlay() {
+    document.getElementById('cepOverlay').classList.remove('show');
+}
+async function checkFirstCep() {
+    const cep = document.getElementById('cepFirstInput').value.trim();
+    const errEl = document.getElementById('cepFirstError');
+    const okEl  = document.getElementById('cepFirstSuccess');
+    errEl.classList.remove('show');
+    okEl.classList.remove('show');
+    if (!cep || cep.replace(/\D/g, '').length !== 8) {
+        errEl.textContent = 'Digite um CEP completo (8 dígitos).';
+        errEl.classList.add('show');
+        return;
+    }
+    try {
+        const r = await API.cep(cep);
+        if (!r.deliverable) {
+            errEl.textContent = r.reason || 'Infelizmente não atendemos essa região.';
+            errEl.classList.add('show');
+            return;
+        }
+        localStorage.setItem('flor_cep', JSON.stringify(r));
+        okEl.textContent = `✅ ${r.city}/${r.state} — entregamos aqui! Bem-vindo(a).`;
+        okEl.classList.add('show');
+        setTimeout(hideCepOverlay, 1200);
+    } catch (e) {
+        errEl.textContent = e.message || 'CEP inválido.';
+        errEl.classList.add('show');
+    }
+}
+function skipCep() {
+    localStorage.setItem('flor_cep_skipped', '1');
+    hideCepOverlay();
+}
+
+// ============ CATEGORIES ============
+async function loadCategories() {
+    try {
+        categoriesTree = await API.categoryTree();
+        renderCategoryFilter();
+    } catch (e) {
+        console.error(e);
+    }
+}
+function renderCategoryFilter() {
+    const bar = document.getElementById('filterBar');
+    bar.innerHTML = '';
+    const all = document.createElement('button');
+    all.className = 'filter-btn' + (activeRootCategoryId == null ? ' active' : '');
+    all.textContent = 'Todos';
+    all.onclick = () => { activeRootCategoryId = null; activeSubCategoryId = null; renderCategoryFilter(); loadProducts(); };
+    bar.appendChild(all);
+
+    (categoriesTree || []).forEach(c => {
+        const b = document.createElement('button');
+        b.className = 'filter-btn' + (activeRootCategoryId === c.id ? ' active' : '');
+        b.textContent = (c.icon || '📂') + ' ' + c.name;
+        b.onclick = () => {
+            activeRootCategoryId = c.id;
+            activeSubCategoryId = null;
+            renderCategoryFilter();
+            renderSubFilter();
+            loadProducts();
+        };
+        bar.appendChild(b);
+    });
+    renderSubFilter();
+}
+function renderSubFilter() {
+    const sub = document.getElementById('subFilterBar');
+    if (!activeRootCategoryId) {
+        sub.style.display = 'none';
+        return;
+    }
+    const root = (categoriesTree || []).find(c => c.id === activeRootCategoryId);
+    if (!root || !root.children || !root.children.length) {
+        sub.style.display = 'none';
+        return;
+    }
+    sub.innerHTML = '';
+    sub.style.display = 'flex';
+    const all = document.createElement('button');
+    all.className = 'filter-btn' + (activeSubCategoryId == null ? ' active' : '');
+    all.textContent = 'Toda ' + root.name;
+    all.onclick = () => { activeSubCategoryId = null; renderSubFilter(); loadProducts(); };
+    sub.appendChild(all);
+
+    (root.children || []).forEach(c => {
+        const b = document.createElement('button');
+        b.className = 'filter-btn' + (activeSubCategoryId === c.id ? ' active' : '');
+        b.textContent = (c.icon || '📁') + ' ' + c.name;
+        b.onclick = () => { activeSubCategoryId = c.id; renderSubFilter(); loadProducts(); };
+        sub.appendChild(b);
+    });
+}
+
+// ============ PRODUCTS ============
+async function loadProducts() {
+    const grid = document.getElementById('productsGrid');
+    grid.innerHTML = '<p class="muted text-center" style="grid-column: 1/-1;">Carregando...</p>';
+    const params = {};
+    const catID = activeSubCategoryId || activeRootCategoryId;
+    if (catID) params.category = catID;
+    try {
+        allProducts = await API.products(params);
+        renderProducts();
+    } catch (e) {
+        grid.innerHTML = '<p class="muted text-center" style="grid-column: 1/-1; color: var(--red);">Erro ao carregar: ' + escapeHTML(e.message) + '</p>';
+    }
+}
+function renderProducts() {
+    const grid = document.getElementById('productsGrid');
+    if (!allProducts.length) {
+        grid.innerHTML = '<p class="muted text-center" style="grid-column: 1/-1;">Nenhum produto nessa categoria ainda.</p>';
+        return;
+    }
+    grid.innerHTML = '';
+    allProducts.forEach((p, idx) => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.id = `card-${p.id}-${idx}`;
+        const images = (p.images && p.images.length) ? p.images : [];
+        const mainImg = images[0] || '';
+        
+        card.innerHTML = `
+            <a href="produto.html?id=${encodeURIComponent(p.id)}" class="product-card-link">
+                <div class="product-image-wrapper">
+                    ${mainImg
+                        ? `<img src="${escapeHTML(mainImg)}" alt="${escapeHTML(p.name)}" class="carousel-img" data-images='${JSON.stringify(images)}'>
+                           <div class="product-fallback" style="display:none;">🌱</div>`
+                        : `<div class="product-fallback">🌱</div>`}
+                </div>
+                <div class="product-info">
+                    <div class="product-name">${escapeHTML(p.name)}</div>
+                    <div class="product-desc">${escapeHTML((p.description || '').slice(0, 140))}</div>
+                    <div class="product-bottom">
+                        <span class="product-price ${p.price_cents == null ? 'consult' : ''}">${formatBRL(p.price_cents)}</span>
+                    </div>
+                </div>
+            </a>
+            <button class="add-btn" title="Adicionar ao carrinho" style="position:absolute;bottom:16px;right:16px;" onclick='event.stopPropagation(); addProductToCart(${JSON.stringify({id:p.id,name:p.name,price_cents:p.price_cents,images:p.images || []}).replace(/\'/g, "&#39;")})'>＋</button>
+        `;
+        grid.appendChild(card);
+
+        // Inicia o carrossel se houver mais de uma imagem
+        if (images.length > 1) {
+            startCardCarousel(card.querySelector('.carousel-img'), images);
+        }
+    });
+}
+
+function startCardCarousel(imgEl, images) {
+    let current = 0;
+    setInterval(() => {
+        current = (current + 1) % images.length;
+        imgEl.style.opacity = '0.5';
+        setTimeout(() => {
+            imgEl.src = images[current];
+            imgEl.style.opacity = '1';
+        }, 300);
+    }, 3000);
+}
+function addProductToCart(p) {
+    Cart.add(p);
+    flashCart();
+}
+function flashCart() {
+    const btn = document.querySelector('.cart-btn');
+    if (!btn) return;
+    btn.style.transform = 'scale(1.15)';
+    setTimeout(() => { btn.style.transform = ''; }, 200);
+}
+
+// ============ CART UI ============
+// toggleCart is defined globally in api.js
+function renderCart() {
+    const items = Cart.items();
+    document.getElementById('cartCount').textContent = Cart.count();
+    document.getElementById('cartTotal').textContent = formatBRL(Cart.subtotalCents());
+    document.getElementById('consultNote').style.display = Cart.hasConsult() ? 'block' : 'none';
+    const list = document.getElementById('cartItems');
+    if (!items.length) {
+        list.innerHTML = '<div class="cart-empty"><p>Seu carrinho está vazio</p></div>';
+        return;
+    }
+    list.innerHTML = '';
+    items.forEach(it => {
+        const row = document.createElement('div');
+        row.className = 'cart-item';
+        row.innerHTML = `
+            ${it.image ? `<img src="${escapeHTML(it.image)}" alt="${escapeHTML(it.name)}">` : `<div style="width:60px;height:60px;background:var(--green-pale);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px;">🌱</div>`}
+            <div class="cart-item-info">
+                <h4>${escapeHTML(it.name)}</h4>
+                <div class="price">${formatBRL((it.unit_cents || 0) * it.quantity) === 'Sob consulta' || it.under_consult ? 'Sob consulta' : formatBRL(it.unit_cents * it.quantity)}</div>
+                <div class="cart-item-qty">
+                    <button onclick="Cart.setQty('${it.product_id}', ${it.quantity - 1})">−</button>
+                    <span>${it.quantity}</span>
+                    <button onclick="Cart.setQty('${it.product_id}', ${it.quantity + 1})">+</button>
+                </div>
+            </div>
+            <button class="btn-ghost" style="background:transparent;border:none;cursor:pointer;color:var(--red);font-size:1.2rem;" onclick="Cart.remove('${it.product_id}')">🗑️</button>
+        `;
+        list.appendChild(row);
+    });
+}
+function goToCheckout() {
+    if (!Cart.count()) {
+        alert('Seu carrinho está vazio!');
+        return;
+    }
+    location.href = 'checkout.html';
+}
+
+// ============ INIT ============
+document.addEventListener('turbo:load', () => {
+    // Só executa se estivermos na Home (evita erros no catálogo)
+    if (!document.getElementById('productsGrid')) return;
+
+    Cart.onChange(renderCart);
+    loadCategories();
+    loadProducts();
+
+    const savedCep = localStorage.getItem('flor_cep');
+    const skipped = localStorage.getItem('flor_cep_skipped');
+    if (!savedCep && !skipped) {
+        setTimeout(showCepOverlay, 600);
+    }
+});
+</script>
+
+</body>
+</html>

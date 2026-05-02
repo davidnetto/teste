@@ -1,0 +1,16 @@
+{
+  "data": {
+    "serviceType": "LALAGO",
+    "language": "pt_BR",
+    "stops": [
+      {
+        "coordinates": { "lat": "-23.5505", "lng": "-46.6333" },
+        "address": "Av. Paulista, 1000, Sao Paulo"
+      },
+      {
+        "coordinates": { "lat": "-23.5615", "lng": "-46.6560" },
+        "address": "Rua Augusta, 500, Sao Paulo"
+      }
+    ]
+  }
+}

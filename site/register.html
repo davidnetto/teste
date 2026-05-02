@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Conta — Flor Em Tina</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 22px 0 18px;
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+        #googleBtnContainer {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+    </style>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<header>
+    <div class="header-inner">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">🌸</div>
+            <div class="logo-text"><h1>Flor Em Tina</h1><span>Plantas & Jardim</span></div>
+        </a>
+        <nav>
+            <a href="index.html">← Voltar à loja</a>
+        </nav>
+    </div>
+</header>
+
+<div class="form-card">
+    <h2>Crie sua conta 🌱</h2>
+    <p class="subtitle">É rápido — só precisamos do básico para você comprar.</p>
+
+    <div id="googleBtnContainer"></div>
+    <div id="googleNotConfigured" class="muted text-center" style="display:none; font-size: 0.8rem; margin-bottom: 12px;">
+        ℹ️ Cadastro com Google indisponível
+    </div>
+
+    <div class="divider">ou cadastre com e-mail</div>
+
+    <form id="regForm" autocomplete="on">
+        <div class="field">
+            <label for="name">Nome completo</label>
+            <input type="text" id="name" required placeholder="Maria da Silva">
+        </div>
+        <div class="field">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" required placeholder="seuemail@exemplo.com">
+        </div>
+        <div class="field">
+            <label for="phone">WhatsApp / Telefone</label>
+            <input type="tel" id="phone" placeholder="(11) 99999-9999" oninput="this.value = maskPhone(this.value)">
+        </div>
+        <div class="field">
+            <label for="password">Senha (mín. 6 caracteres)</label>
+            <input type="password" id="password" required minlength="6" placeholder="••••••••">
+        </div>
+        <div class="field">
+            <label for="passwordConfirm">Confirmar senha</label>
+            <input type="password" id="passwordConfirm" required minlength="6" placeholder="••••••••">
+        </div>
+        <div class="error-msg" id="err"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top: 8px;" id="submitBtn">Criar conta</button>
+    </form>
+
+    <p class="muted text-center mt-24">
+        Já tem conta? <a href="login.html" style="color: var(--green-dark); font-weight: 600;">Entrar</a>
+    </p>
+</div>
+
+<script src="api.js"></script>
+<script>
+const form = document.getElementById('regForm');
+const errEl = document.getElementById('err');
+const btn = document.getElementById('submitBtn');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errEl.classList.remove('show');
+    const name     = document.getElementById('name').value.trim();
+    const email    = document.getElementById('email').value.trim();
+    const phone    = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('passwordConfirm').value;
+
+    if (password !== confirm) {
+        errEl.textContent = 'As senhas não coincidem.';
+        errEl.classList.add('show');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Criando...';
+    try {
+        await API.register({ name, email, phone, password });
+        location.href = 'index.html';
+    } catch (e) {
+        errEl.textContent = e.message || 'Falha no cadastro.';
+        errEl.classList.add('show');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Criar conta';
+    }
+});
+
+// === Google Sign-In ===
+async function setupGoogle() {
+    let config;
+    try { config = await API.googleConfig(); }
+    catch(e) {
+        document.getElementById('googleNotConfigured').style.display = 'block';
+        return;
+    }
+    if (!config.client_id) {
+        document.getElementById('googleNotConfigured').style.display = 'block';
+        return;
+    }
+    function init() {
+        if (typeof google === 'undefined' || !google.accounts) {
+            setTimeout(init, 200);
+            return;
+        }
+        google.accounts.id.initialize({
+            client_id: config.client_id,
+            callback: handleGoogleCredential,
+        });
+        google.accounts.id.renderButton(
+            document.getElementById('googleBtnContainer'),
+            { theme: 'outline', size: 'large', shape: 'pill', text: 'signup_with', width: 320 }
+        );
+    }
+    init();
+}
+async function handleGoogleCredential(resp) {
+    errEl.classList.remove('show');
+    btn.disabled = true;
+    btn.textContent = 'Cadastrando com Google...';
+    try {
+        await API.googleLogin(resp.credential);
+        location.href = 'index.html';
+    } catch (e) {
+        errEl.textContent = e.message || 'Falha no cadastro com Google.';
+        errEl.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Criar conta';
+    }
+}
+setupGoogle();
+</script>
+
+</body>
+</html>

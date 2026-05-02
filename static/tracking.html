@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rastreamento de Entrega</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      background: #1a1a2e; color: #fff;
+      padding: 14px 24px; display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3); z-index: 1000;
+    }
+    header h1 { font-size: 1.1rem; font-weight: 600; }
+
+    .badge {
+      font-size: .75rem; padding: 3px 10px; border-radius: 20px;
+      background: #16213e; border: 1px solid #0f3460; color: #fff;
+    }
+    .badge.assigning { background: #f39c12; border-color: #e67e22; color: #000; }
+    .badge.ongoing   { background: #27ae60; border-color: #219a52; }
+    .badge.picked    { background: #2980b9; border-color: #1a6fa3; }
+    .badge.completed { background: #8e44ad; border-color: #7d3c98; }
+    .badge.canceled  { background: #c0392b; border-color: #a93226; }
+
+    .layout { display: flex; flex: 1; overflow: hidden; }
+    #map { flex: 1; }
+
+    .panel {
+      width: 300px; background: #fff;
+      display: flex; flex-direction: column;
+      box-shadow: -2px 0 12px rgba(0,0,0,.1); overflow-y: auto;
+    }
+
+    #search-form { padding: 16px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid #eee; }
+    #search-form input {
+      padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px;
+      font-size: .9rem; outline: none;
+    }
+    #search-form input:focus { border-color: #0f3460; }
+    #search-form button {
+      padding: 9px; background: #0f3460; color: #fff; border: none;
+      border-radius: 8px; cursor: pointer; font-size: .9rem; font-weight: 600;
+    }
+    #search-form button:hover { background: #1a5276; }
+
+    .panel-section { padding: 16px; border-bottom: 1px solid #eee; }
+    .panel-section h2 { font-size: .75rem; text-transform: uppercase; color: #999; margin-bottom: 10px; letter-spacing: .05em; }
+
+    .driver-card { display: flex; align-items: center; gap: 12px; }
+    .driver-photo {
+      width: 52px; height: 52px; border-radius: 50%;
+      object-fit: cover; background: #eee; border: 2px solid #ddd; flex-shrink: 0;
+    }
+    .driver-name { font-weight: 600; font-size: .95rem; }
+    .driver-sub  { font-size: .8rem; color: #666; margin-top: 2px; }
+
+    .info-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: .85rem; }
+    .info-row span:first-child { color: #666; }
+    .info-row span:last-child  { font-weight: 500; color: #222; text-align: right; }
+
+    .steps { display: flex; flex-direction: column; gap: 6px; }
+    .step { display: flex; align-items: center; gap: 10px; font-size: .85rem; color: #aaa; }
+    .step.done  { color: #27ae60; }
+    .step.active { color: #0f3460; font-weight: 600; }
+    .step-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #ddd; flex-shrink: 0;
+    }
+    .step.done  .step-dot { background: #27ae60; }
+    .step.active .step-dot { background: #0f3460; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    .route-info { display: flex; gap: 12px; }
+    .route-stat { flex: 1; background: #f8f9fa; border-radius: 8px; padding: 10px; text-align: center; }
+    .route-stat .val { font-size: 1.1rem; font-weight: 700; color: #0f3460; }
+    .route-stat .lbl { font-size: .7rem; color: #888; margin-top: 2px; }
+
+    #no-driver { text-align: center; padding: 20px; color: #aaa; font-size: .9rem; }
+
+    .log { font-size: .72rem; color: #888; padding: 10px 16px; overflow-y: auto; max-height: 160px; }
+    .log p { margin-bottom: 3px; }
+    .log .ts { color: #bbb; margin-right: 4px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🚚 Rastreamento em Tempo Real</h1>
+  <span id="status-badge" class="badge">—</span>
+</header>
+
+<div class="layout">
+  <div id="map"></div>
+
+  <div class="panel">
+    <form id="search-form">
+      <input id="order-input" type="text" placeholder="ID do pedido" />
+      <button type="submit">Rastrear</button>
+    </form>
+
+    <div id="route-section" class="panel-section" style="display:none">
+      <h2>Rota</h2>
+      <div class="route-info">
+        <div class="route-stat">
+          <div class="val" id="stat-dist">—</div>
+          <div class="lbl">Distância</div>
+        </div>
+        <div class="route-stat">
+          <div class="val" id="stat-eta">—</div>
+          <div class="lbl">Tempo est.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="status-section" class="panel-section" style="display:none">
+      <h2>Progresso</h2>
+      <div class="steps">
+        <div class="step" id="step-assigning">
+          <div class="step-dot"></div> Procurando motorista
+        </div>
+        <div class="step" id="step-ongoing">
+          <div class="step-dot"></div> A caminho da coleta
+        </div>
+        <div class="step" id="step-picked">
+          <div class="step-dot"></div> Pacote coletado
+        </div>
+        <div class="step" id="step-completed">
+          <div class="step-dot"></div> Entregue
+        </div>
+      </div>
+    </div>
+
+    <div id="driver-section" class="panel-section" style="display:none">
+      <h2>Motorista</h2>
+      <div class="driver-card">
+        <img id="driver-photo" class="driver-photo" src="" alt="foto"
+             onerror="this.src='https://ui-avatars.com/api/?name=Motorista&background=0f3460&color=fff&size=52'" />
+        <div>
+          <div id="driver-name" class="driver-name">—</div>
+          <div id="driver-plate" class="driver-sub">—</div>
+          <div id="driver-phone" class="driver-sub">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="coords-section" class="panel-section" style="display:none">
+      <h2>Localização</h2>
+      <div class="info-row"><span>Latitude</span><span id="info-lat">—</span></div>
+      <div class="info-row"><span>Longitude</span><span id="info-lng">—</span></div>
+      <div class="info-row"><span>Atualizado</span><span id="info-updated">—</span></div>
+    </div>
+
+    <div id="no-driver" class="no-driver">Cole o ID do pedido acima e clique em Rastrear.</div>
+
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // ── Mapa ────────────────────────────────────────────────────────
+  const map = L.map('map').setView([-23.5505, -46.6333], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>'
+  }).addTo(map);
+
+  // ── Ícones ──────────────────────────────────────────────────────
+  const iconDriver = L.divIcon({
+    html: '<div style="font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))">🛵</div>',
+    iconSize: [32, 32], iconAnchor: [16, 16], className: ''
+  });
+  const iconOrigin = L.divIcon({
+    html: '<div style="font-size:22px">📦</div>',
+    iconSize: [28, 28], iconAnchor: [14, 14], className: ''
+  });
+  const iconDest = L.divIcon({
+    html: '<div style="font-size:22px">📍</div>',
+    iconSize: [28, 28], iconAnchor: [14, 28], className: ''
+  });
+
+  // ── Estado ──────────────────────────────────────────────────────
+  let ws = null;
+  let driverMarker = null;
+  let originMarker = null;
+  let destMarker   = null;
+  let routeLine    = null;
+  let traveledLine = null;
+  let traveled     = [];
+  let animFrame    = null;
+  let prevLatLng   = null;
+
+  // ── Log ─────────────────────────────────────────────────────────
+  function log(msg) {
+    const el = document.getElementById('log');
+    const ts = new Date().toLocaleTimeString('pt-BR');
+    el.innerHTML = `<p><span class="ts">${ts}</span>${msg}</p>` + el.innerHTML;
+  }
+
+  // ── Badge de status ─────────────────────────────────────────────
+  function setStatus(status) {
+    const badge = document.getElementById('status-badge');
+    badge.textContent = status || '—';
+    badge.className = 'badge';
+    const map = {
+      ASSIGNING_DRIVER: 'assigning',
+      ON_GOING:   'ongoing',
+      PICKED_UP:  'picked',
+      COMPLETED:  'completed',
+      CANCELED:   'canceled',
+      REJECTED:   'canceled',
+      EXPIRED:    'canceled',
+    };
+    if (map[status]) badge.classList.add(map[status]);
+
+    // Steps
+    document.getElementById('status-section').style.display = 'block';
+    const order = ['ASSIGNING_DRIVER','ON_GOING','PICKED_UP','COMPLETED'];
+    const stepIds = ['step-assigning','step-ongoing','step-picked','step-completed'];
+    const idx = order.indexOf(status);
+    stepIds.forEach((id, i) => {
+      const el = document.getElementById(id);
+      el.className = 'step' + (i < idx ? ' done' : i === idx ? ' active' : '');
+    });
+  }
+
+  // ── Rota no mapa ────────────────────────────────────────────────
+  function drawRoute(points, origin, dest) {
+    if (routeLine) map.removeLayer(routeLine);
+    if (traveledLine) map.removeLayer(traveledLine);
+    if (originMarker) map.removeLayer(originMarker);
+    if (destMarker) map.removeLayer(destMarker);
+    traveled = [];
+
+    const latlngs = points.map(p => [p.lat, p.lng]);
+
+    // linha cinza (rota completa)
+    routeLine = L.polyline(latlngs, {
+      color: '#cbd5e1', weight: 5, opacity: 0.8
+    }).addTo(map);
+
+    // linha azul (percorrido)
+    traveledLine = L.polyline([], {
+      color: '#0f3460', weight: 5, opacity: 1
+    }).addTo(map);
+
+    // marcadores de origem e destino
+    if (origin) {
+      originMarker = L.marker([origin.lat, origin.lng], { icon: iconOrigin })
+        .addTo(map).bindPopup('<b>Coleta</b>');
+    }
+    if (dest) {
+      destMarker = L.marker([dest.lat, dest.lng], { icon: iconDest })
+        .addTo(map).bindPopup('<b>Entrega</b>');
+    }
+
+    map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+
+    // info de rota
+    if (points.length > 1) {
+      document.getElementById('route-section').style.display = 'block';
+    }
+  }
+
+  // ── Animar marcador suavemente ──────────────────────────────────
+  function animateTo(marker, from, to, durationMs) {
+    if (animFrame) cancelAnimationFrame(animFrame);
+    const start = performance.now();
+    function step(now) {
+      const t = Math.min((now - start) / durationMs, 1);
+      const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+      const lat = from[0] + (to[0] - from[0]) * ease;
+      const lng = from[1] + (to[1] - from[1]) * ease;
+      marker.setLatLng([lat, lng]);
+      if (t < 1) animFrame = requestAnimationFrame(step);
+    }
+    animFrame = requestAnimationFrame(step);
+  }
+
+  // ── Atualiza posição do motorista ────────────────────────────────
+  function updateDriver(data) {
+    if (!data.driverId) {
+      document.getElementById('driver-section').style.display = 'none';
+      document.getElementById('coords-section').style.display = 'none';
+      document.getElementById('no-driver').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('no-driver').style.display = 'none';
+    document.getElementById('driver-section').style.display = 'block';
+    document.getElementById('driver-name').textContent  = data.name  || '—';
+    document.getElementById('driver-plate').textContent = data.plate || '—';
+    document.getElementById('driver-phone').textContent = data.phone || '—';
+    if (data.photo) document.getElementById('driver-photo').src = data.photo;
+
+    // Rota completa (só vem no primeiro update)
+    if (data.route && data.route.length > 1) {
+      drawRoute(data.route, data.origin, data.dest);
+    }
+
+    if (data.lat && data.lng) {
+      document.getElementById('coords-section').style.display = 'block';
+      document.getElementById('info-lat').textContent = parseFloat(data.lat).toFixed(6);
+      document.getElementById('info-lng').textContent = parseFloat(data.lng).toFixed(6);
+      document.getElementById('info-updated').textContent = data.updatedAt
+        ? new Date(data.updatedAt).toLocaleTimeString('pt-BR') : '—';
+
+      const latlng = [parseFloat(data.lat), parseFloat(data.lng)];
+
+      if (!driverMarker) {
+        driverMarker = L.marker(latlng, { icon: iconDriver, zIndexOffset: 1000 })
+          .addTo(map).bindPopup(`<b>${data.name}</b><br>${data.plate}`);
+        prevLatLng = latlng;
+      } else {
+        animateTo(driverMarker, prevLatLng, latlng, 800);
+        prevLatLng = latlng;
+      }
+
+      // trilha percorrida
+      traveled.push(latlng);
+      if (traveledLine) traveledLine.setLatLngs(traveled);
+    }
+  }
+
+  // ── Conectar WebSocket ──────────────────────────────────────────
+  function connect(orderID) {
+    if (ws) ws.close();
+    if (driverMarker) { map.removeLayer(driverMarker); driverMarker = null; }
+    if (routeLine)    { map.removeLayer(routeLine);    routeLine    = null; }
+    if (traveledLine) { map.removeLayer(traveledLine); traveledLine = null; }
+    if (originMarker) { map.removeLayer(originMarker); originMarker = null; }
+    if (destMarker)   { map.removeLayer(destMarker);   destMarker   = null; }
+    traveled = []; prevLatLng = null;
+
+    log(`Conectando ao pedido ${orderID}…`);
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(`${proto}://${location.host}/ws/tracking/${orderID}`);
+
+    ws.onopen  = () => log('WebSocket conectado');
+    ws.onclose = () => log('WebSocket desconectado');
+    ws.onerror = () => log('Erro na conexão WebSocket');
+
+    ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      if (data.error) { log(`Erro: ${data.error}`); return; }
+      setStatus(data.status);
+      updateDriver(data);
+      if (data.lat) log(`${data.status} | ${parseFloat(data.lat).toFixed(5)}, ${parseFloat(data.lng).toFixed(5)}`);
+    };
+  }
+
+  // ── Formulário ──────────────────────────────────────────────────
+  document.getElementById('search-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const id = document.getElementById('order-input').value.trim();
+    if (id) connect(id);
+  });
+
+  // Auto-connect via query string
+  const params = new URLSearchParams(location.search);
+  if (params.get('order')) {
+    document.getElementById('order-input').value = params.get('order');
+    connect(params.get('order'));
+  }
+</script>
+</body>
+</html>

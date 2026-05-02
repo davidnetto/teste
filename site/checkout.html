@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Pedido — Flor Em Tina</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .checkout-wrap {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 30px;
+        }
+        @media (max-width: 900px) { .checkout-wrap { grid-template-columns: 1fr; } }
+        .panel {
+            background: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+        .panel h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--green-dark);
+            margin-bottom: 16px;
+            font-size: 1.3rem;
+        }
+        #map { height: 320px; border-radius: 12px; overflow: hidden; }
+        .map-info {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: var(--green-pale);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: var(--green-dark);
+        }
+        .summary-list { list-style: none; }
+        .summary-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.9rem;
+        }
+        .summary-list li:last-child { border-bottom: none; }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid var(--green-pale);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--green-dark);
+        }
+        .pix-box {
+            text-align: center;
+            background: var(--green-pale);
+            border: 2px dashed var(--green-medium);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        .pix-box img { max-width: 240px; margin: 0 auto 14px; border-radius: 8px; background: white; padding: 8px; }
+        .pix-payload {
+            background: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            word-break: break-all;
+            margin: 10px 0;
+            border: 1px solid #e5e7eb;
+        }
+        .copy-btn { margin-top: 8px; }
+        .pix-status {
+            padding: 12px 18px;
+            border-radius: 30px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .pix-status.paid { background: var(--green-pale); color: var(--green-dark); animation: pulse 1.2s infinite; }
+        .timer {
+            font-size: 0.95rem;
+            color: var(--text-medium);
+            margin-top: 8px;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 12px;
+            background: #f9fafb;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .step-num {
+            background: var(--green-medium);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .step.done .step-num { background: var(--green-dark); }
+        .step.done { background: var(--green-pale); }
+
+        /* Fireworks success modal */
+        .success-modal h2 { font-size: 2rem; margin-bottom: 8px; }
+        .success-modal { padding: 50px 30px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-inner">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">🌸</div>
+            <div class="logo-text"><h1>Flor Em Tina</h1><span>Finalizar Pedido</span></div>
+        </a>
+        <nav>
+            <a href="index.html">← Continuar comprando</a>
+        </nav>
+    </div>
+</header>
+
+<div class="checkout-wrap">
+
+    <!-- ESQUERDA: dados de entrega + mapa -->
+    <div>
+        <div class="panel">
+            <h3>📍 Endereço de Entrega</h3>
+            <form id="addrForm">
+                <div class="field-row">
+                    <div class="field">
+                        <label>CEP *</label>
+                        <input type="text" id="cep" required maxlength="9" oninput="this.value = maskCEP(this.value); if(this.value.length===9) lookupCep()" placeholder="00000-000">
+                    </div>
+                    <div class="field">
+                        <label>Número *</label>
+                        <input type="text" id="number" required placeholder="123">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Rua *</label>
+                    <input type="text" id="street" required>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label>Bairro</label>
+                        <input type="text" id="neighborhood">
+                    </div>
+                    <div class="field">
+                        <label>Complemento</label>
+                        <input type="text" id="complement" placeholder="Apto, bloco...">
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label>Cidade *</label>
+                        <input type="text" id="city" required>
+                    </div>
+                    <div class="field">
+                        <label>UF *</label>
+                        <input type="text" id="state" required maxlength="2" style="text-transform:uppercase">
+                    </div>
+                </div>
+                <div class="error-msg" id="addrErr"></div>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h3>🗺️ Mapa & Rota</h3>
+            <div id="map"></div>
+            <div class="map-info" id="mapInfo">Preencha o CEP para ver a rota até nossa loja.</div>
+            <button type="button" class="btn btn-secondary mt-16" id="quoteBtn" onclick="quoteShipping()" disabled>📦 Calcular Frete (Lalamove)</button>
+        </div>
+
+        <div class="panel">
+            <h3>👤 Seus Dados</h3>
+            <div class="field-row">
+                <div class="field">
+                    <label>Nome *</label>
+                    <input type="text" id="customerName" required>
+                </div>
+                <div class="field">
+                    <label>WhatsApp *</label>
+                    <input type="text" id="customerPhone" required oninput="this.value = maskPhone(this.value)" placeholder="(11) 99999-9999">
+                </div>
+            </div>
+            <div class="field">
+                <label>E-mail *</label>
+                <input type="email" id="customerEmail" required>
+            </div>
+            <div class="field">
+                <label>CPF/CNPJ (opcional, para nota fiscal)</label>
+                <input type="text" id="cpfCnpj" placeholder="000.000.000-00">
+            </div>
+            <div class="field">
+                <label>Observações</label>
+                <textarea id="notes" rows="2" placeholder="Ex: Entregar na portaria"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIREITA: resumo + pagamento -->
+    <div>
+        <div class="panel" style="position: sticky; top: 100px;">
+            <h3>🛒 Seu Pedido</h3>
+            <ul class="summary-list" id="summary"></ul>
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span id="subtotal">R$ 0,00</span>
+            </div>
+            <div class="total-row" style="border-top: none; padding-top: 0;">
+                <span>Frete</span>
+                <span id="shipping">A calcular</span>
+            </div>
+            <div class="total-row">
+                <span>Total</span>
+                <span id="total">R$ 0,00</span>
+            </div>
+
+            <div id="consultWarning" class="map-info" style="display:none; background:#fef3c7; color:#92400e;">
+                ⚠️ Há itens sob consulta. Não geramos cobrança Pix imediata — entraremos em contato com o orçamento.
+            </div>
+
+            <div class="step" id="step1"><div class="step-num">1</div><div>Preencha seu endereço</div></div>
+            <div class="step" id="step2"><div class="step-num">2</div><div>Calcule o frete via Lalamove</div></div>
+            <div class="step" id="step3"><div class="step-num">3</div><div>Pague via Pix</div></div>
+            <div class="step" id="step4"><div class="step-num">4</div><div>Aguarde aviso de pronto</div></div>
+
+            <button type="button" class="btn btn-primary" style="width:100%; margin-top: 16px;" id="payBtn" onclick="placeOrder()" disabled>Gerar Pix 💚</button>
+
+            <div id="pixArea" style="display:none;">
+                <div class="pix-box">
+                    <h4 style="color: var(--green-dark); margin-bottom: 10px;">📱 Pague com Pix</h4>
+                    <img id="pixQR" alt="QR Code Pix">
+                    <p style="font-size: 0.8rem; color: var(--text-medium);">Escaneie o QR ou copie o código abaixo:</p>
+                    <div class="pix-payload" id="pixPayload"></div>
+                    <button class="btn btn-secondary copy-btn" onclick="copyPixPayload()">Copiar código Pix</button>
+                    <div class="timer" id="pixTimer"></div>
+                </div>
+                <div class="text-center mt-16">
+                    <span class="pix-status" id="pixStatus">⏳ Aguardando pagamento...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sucesso (com fogos) -->
+<div class="overlay" id="successOverlay">
+    <canvas class="fireworks-canvas" id="fireworks"></canvas>
+    <div class="modal success-modal" style="z-index: 1001;">
+        <div class="modal-icon">🎉</div>
+        <h2>Pagamento Confirmado!</h2>
+        <p>Seu pedido <strong id="orderIdSuccess"></strong> foi pago. Estamos preparando suas plantas com carinho 🌱</p>
+        <p class="muted" id="readyMsg">Vamos te avisar assim que estiverem prontas para a entrega.</p>
+        <button class="btn btn-primary mt-16" onclick="goBackHome()">Voltar à Loja</button>
+        <button class="btn btn-secondary mt-16" onclick="goToTracking()" id="trackBtn" style="display:none;">Acompanhar Entrega</button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="api.js"></script>
+<script>
+// === Coordenadas da loja (origem) ===
+const STORE = {
+    lat: -23.5505,
+    lng: -46.6333,
+    name: 'Flor Em Tina',
+    address: 'Av. Paulista, 1000, São Paulo'
+};
+
+let map, destMarker, storeMarker, routeLine;
+let currentQuotation = null;
+let currentOrder = null;
+let pixPolling = null;
+let pixWS = null;
+let pixCountdown = null;
+
+// ============ MAP ============
+function initMap() {
+    map = L.map('map').setView([STORE.lat, STORE.lng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap',
+        maxZoom: 19
+    }).addTo(map);
+    storeMarker = L.marker([STORE.lat, STORE.lng], {
+        title: 'Loja',
+    }).addTo(map).bindPopup('🌸 ' + STORE.name + '<br>' + STORE.address);
+}
+
+async function geocode(query) {
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query);
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' }});
+    if (!res.ok) return null;
+    const arr = await res.json();
+    if (!arr.length) return null;
+    return { lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon) };
+}
+
+async function updateMapForAddress() {
+    const street = document.getElementById('street').value;
+    const number = document.getElementById('number').value;
+    const city = document.getElementById('city').value;
+    const state = document.getElementById('state').value;
+    if (!street || !city) return;
+
+    const q = `${street}, ${number || ''}, ${city}, ${state}, Brasil`;
+    try {
+        const loc = await geocode(q);
+        if (!loc) return;
+        if (destMarker) map.removeLayer(destMarker);
+        if (routeLine) map.removeLayer(routeLine);
+        destMarker = L.marker([loc.lat, loc.lng], { title: 'Entrega' }).addTo(map).bindPopup('🚚 Endereço de entrega');
+        routeLine = L.polyline([[STORE.lat, STORE.lng], [loc.lat, loc.lng]], {
+            color: 'var(--green-medium)',
+            color: '#4a8c3f',
+            weight: 4,
+            dashArray: '6, 8'
+        }).addTo(map);
+        map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+        document.getElementById('mapInfo').innerHTML = `📍 Rota da loja até <strong>${escapeHTML(street)}, ${escapeHTML(number || '')}</strong>`;
+        document.getElementById('quoteBtn').disabled = false;
+        window.__destLat = loc.lat;
+        window.__destLng = loc.lng;
+    } catch (e) {
+        console.warn('geocode falhou', e);
+    }
+}
+
+// ============ CEP LOOKUP ============
+async function lookupCep() {
+    const cep = document.getElementById('cep').value;
+    const errEl = document.getElementById('addrErr');
+    errEl.classList.remove('show');
+    if (cep.replace(/\D/g, '').length !== 8) return;
+    try {
+        const r = await API.cep(cep);
+        if (!r.deliverable) {
+            errEl.textContent = '❌ ' + (r.reason || 'Não entregamos nessa região.');
+            errEl.classList.add('show');
+            document.getElementById('payBtn').disabled = true;
+            return;
+        }
+        document.getElementById('street').value = r.street || '';
+        document.getElementById('neighborhood').value = r.neighborhood || '';
+        document.getElementById('city').value = r.city || '';
+        document.getElementById('state').value = r.state || '';
+        document.getElementById('step1').classList.add('done');
+        await updateMapForAddress();
+    } catch (e) {
+        errEl.textContent = e.message || 'CEP inválido';
+        errEl.classList.add('show');
+    }
+}
+
+// ============ LALAMOVE QUOTATION ============
+async function quoteShipping() {
+    const btn = document.getElementById('quoteBtn');
+    btn.disabled = true;
+    btn.textContent = 'Calculando...';
+    try {
+        if (!window.__destLat) {
+            await updateMapForAddress();
+        }
+        if (!window.__destLat) {
+            throw new Error('Não foi possível localizar o endereço no mapa');
+        }
+        const payload = {
+            data: {
+                serviceType: 'MOTORCYCLE',
+                language: 'pt_BR',
+                stops: [
+                    { coordinates: { lat: STORE.lat.toString(), lng: STORE.lng.toString() }, address: STORE.address },
+                    {
+                        coordinates: { lat: window.__destLat.toString(), lng: window.__destLng.toString() },
+                        address: `${document.getElementById('street').value}, ${document.getElementById('number').value}, ${document.getElementById('city').value}`
+                    }
+                ]
+            }
+        };
+        const r = await API.quote(payload);
+        currentQuotation = r.data;
+        const totalCents = Math.round(parseFloat(r.data.priceBreakdown.total) * 100);
+        document.getElementById('shipping').textContent = formatBRL(totalCents);
+        recomputeTotal(totalCents);
+        document.getElementById('step2').classList.add('done');
+        document.getElementById('payBtn').disabled = false;
+        document.getElementById('mapInfo').innerHTML += ` · <strong>Frete: ${formatBRL(totalCents)}</strong>`;
+    } catch (e) {
+        alert('Falha na cotação: ' + e.message + '\n\nDica: configure LALAMOVE_API_KEY/SECRET no servidor para sandbox real. Você pode prosseguir com frete = R$ 0 para testar.');
+        // permite testar sem Lalamove configurado
+        currentQuotation = { quotationId: '', priceBreakdown: { total: '0' }, stops: [] };
+        document.getElementById('shipping').textContent = 'R$ 0,00';
+        recomputeTotal(0);
+        document.getElementById('step2').classList.add('done');
+        document.getElementById('payBtn').disabled = false;
+    } finally {
+        btn.textContent = '📦 Recalcular Frete';
+        btn.disabled = false;
+    }
+}
+
+function recomputeTotal(shippingCents) {
+    const sub = Cart.subtotalCents();
+    document.getElementById('subtotal').textContent = formatBRL(sub);
+    document.getElementById('total').textContent = formatBRL(sub + (shippingCents || 0));
+    window.__shipping = shippingCents || 0;
+}
+
+// ============ PLACE ORDER + PIX ============
+async function placeOrder() {
+    const errEl = document.getElementById('addrErr');
+    errEl.classList.remove('show');
+
+    const name = document.getElementById('customerName').value.trim();
+    const phone = document.getElementById('customerPhone').value.trim();
+    const email = document.getElementById('customerEmail').value.trim();
+    if (!name || !phone || !email) {
+        errEl.textContent = 'Preencha nome, telefone e e-mail.';
+        errEl.classList.add('show');
+        return;
+    }
+
+    const payload = {
+        customer_name: name,
+        customer_email: email,
+        customer_phone: phone,
+        cpf_cnpj: document.getElementById('cpfCnpj').value.trim(),
+        notes: document.getElementById('notes').value.trim(),
+        shipping_cents: window.__shipping || 0,
+        quotation_id: (currentQuotation && currentQuotation.quotationId) || '',
+        address: {
+            cep: document.getElementById('cep').value,
+            street: document.getElementById('street').value,
+            number: document.getElementById('number').value,
+            complement: document.getElementById('complement').value,
+            neighborhood: document.getElementById('neighborhood').value,
+            city: document.getElementById('city').value,
+            state: document.getElementById('state').value.toUpperCase(),
+            lat: window.__destLat || 0,
+            lng: window.__destLng || 0,
+        },
+        items: Cart.items().map(it => ({
+            product_id: it.product_id,
+            name: it.name,
+            quantity: it.quantity,
+            unit_cents: it.unit_cents == null ? null : it.unit_cents,
+            under_consult: !!it.under_consult,
+        })),
+    };
+
+    const btn = document.getElementById('payBtn');
+    btn.disabled = true;
+    btn.textContent = 'Processando...';
+    try {
+        currentOrder = await API.createOrder(payload);
+        document.getElementById('step3').classList.add('done');
+        if (currentOrder.payment && currentOrder.payment.pix_qr_code_base64) {
+            showPixUI(currentOrder.payment);
+            startPaymentPolling(currentOrder.id);
+            connectOrderWS(currentOrder.id);
+        } else {
+            // Pedido sob consulta
+            showSuccess(currentOrder.id, 'Recebemos seu pedido! Iremos calcular o orçamento e entrar em contato em breve.');
+            Cart.clear();
+        }
+    } catch (e) {
+        errEl.textContent = e.message || 'Falha ao criar pedido';
+        errEl.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Gerar Pix 💚';
+    }
+}
+
+function showPixUI(payment) {
+    document.getElementById('pixArea').style.display = 'block';
+    document.getElementById('pixQR').src = 'data:image/png;base64,' + payment.pix_qr_code_base64;
+    document.getElementById('pixPayload').textContent = payment.pix_payload || '';
+    if (payment.pix_expires_at) {
+        startCountdown(new Date(payment.pix_expires_at));
+    }
+    document.getElementById('payBtn').style.display = 'none';
+    document.getElementById('pixArea').scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyPixPayload() {
+    const txt = document.getElementById('pixPayload').textContent;
+    navigator.clipboard.writeText(txt).then(() => {
+        const btn = event.target;
+        const original = btn.textContent;
+        btn.textContent = '✓ Copiado!';
+        setTimeout(() => btn.textContent = original, 1500);
+    });
+}
+
+function startCountdown(expiresAt) {
+    if (pixCountdown) clearInterval(pixCountdown);
+    function tick() {
+        const remaining = Math.max(0, expiresAt - Date.now());
+        const m = Math.floor(remaining / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        document.getElementById('pixTimer').textContent = remaining > 0
+            ? `Expira em ${m}:${s.toString().padStart(2, '0')}`
+            : 'QR expirado — recarregue a página para gerar novo';
+        if (remaining <= 0) clearInterval(pixCountdown);
+    }
+    tick();
+    pixCountdown = setInterval(tick, 1000);
+}
+
+function startPaymentPolling(orderID) {
+    if (pixPolling) clearInterval(pixPolling);
+    let attempts = 0;
+    pixPolling = setInterval(async () => {
+        attempts++;
+        try {
+            const r = await API.paymentStatus(orderID);
+            if (r.paid) {
+                onPaymentConfirmed(orderID);
+            }
+        } catch (e) {
+            console.warn('poll error', e);
+        }
+        if (attempts > 720) clearInterval(pixPolling); // ~1h
+    }, 5000);
+}
+
+function connectOrderWS(orderID) {
+    try {
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        pixWS = new WebSocket(proto + '//' + location.host + '/ws/orders/' + orderID);
+        pixWS.onmessage = (ev) => {
+            try {
+                const data = JSON.parse(ev.data);
+                if (data.type === 'payment_confirmed') {
+                    onPaymentConfirmed(orderID);
+                } else if (data.type === 'ready_for_delivery') {
+                    document.getElementById('readyMsg').textContent = '✅ ' + data.message;
+                }
+            } catch(_) {}
+        };
+        pixWS.onerror = () => console.warn('WS error');
+    } catch (e) { console.warn('WS connect failed', e); }
+}
+
+function onPaymentConfirmed(orderID) {
+    if (pixPolling) { clearInterval(pixPolling); pixPolling = null; }
+    document.getElementById('pixStatus').classList.add('paid');
+    document.getElementById('pixStatus').textContent = '✅ Pagamento confirmado!';
+    document.getElementById('step3').classList.add('done');
+    Cart.clear();
+    showSuccess(orderID, '');
+    launchFireworks();
+}
+
+function showSuccess(orderID, customMessage) {
+    document.getElementById('orderIdSuccess').textContent = '#' + (orderID || '').substring(0, 8);
+    if (customMessage) {
+        document.getElementById('readyMsg').textContent = customMessage;
+    }
+    document.getElementById('successOverlay').classList.add('show');
+    document.getElementById('trackBtn').style.display = 'inline-flex';
+}
+
+function goBackHome() { location.href = 'index.html'; }
+function goToTracking() {
+    if (currentOrder && currentOrder.lalamove_order_id) {
+        location.href = '/tracking?order=' + currentOrder.lalamove_order_id;
+    } else {
+        location.href = 'meus-pedidos.html';
+    }
+}
+
+// ============ FIREWORKS ANIMATION ============
+function launchFireworks() {
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const particles = [];
+    const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#1dd1a1', '#5f27cd', '#ff9ff3', '#7bc96f'];
+
+    function explode(x, y) {
+        const count = 50 + Math.random() * 30;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 * i) / count;
+            const speed = 2 + Math.random() * 4;
+            particles.push({
+                x, y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: 1,
+                color
+            });
+        }
+    }
+
+    let frame = 0;
+    let animationId;
+    function loop() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        if (frame % 18 === 0 && frame < 240) {
+            explode(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height * 0.6 + 60
+            );
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.07;
+            p.life -= 0.012;
+            if (p.life <= 0) {
+                particles.splice(i, 1);
+                continue;
+            }
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        frame++;
+        if (frame > 360 && particles.length === 0) {
+            cancelAnimationFrame(animationId);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            return;
+        }
+        animationId = requestAnimationFrame(loop);
+    }
+    loop();
+}
+
+// ============ INIT ============
+window.addEventListener('DOMContentLoaded', () => {
+    if (!Cart.count()) {
+        alert('Seu carrinho está vazio!');
+        location.href = 'index.html';
+        return;
+    }
+
+    // Pré-preenche dados do usuário se logado
+    const u = API.user();
+    if (u) {
+        document.getElementById('customerName').value = u.name || '';
+        document.getElementById('customerEmail').value = u.email || '';
+        if (u.phone) document.getElementById('customerPhone').value = maskPhone(u.phone);
+    }
+
+    // Pré-preenche CEP do popup
+    const savedCep = localStorage.getItem('flor_cep');
+    if (savedCep) {
+        try {
+            const c = JSON.parse(savedCep);
+            document.getElementById('cep').value = c.cep || '';
+            document.getElementById('street').value = c.street || '';
+            document.getElementById('neighborhood').value = c.neighborhood || '';
+            document.getElementById('city').value = c.city || '';
+            document.getElementById('state').value = c.state || '';
+        } catch(_){}
+    }
+
+    // Resumo
+    const items = Cart.items();
+    const summary = document.getElementById('summary');
+    summary.innerHTML = '';
+    items.forEach(it => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span>${escapeHTML(it.name)} <small style="color:var(--text-light)">×${it.quantity}</small></span>
+            <span>${it.under_consult ? '<em>Sob consulta</em>' : formatBRL(it.unit_cents * it.quantity)}</span>
+        `;
+        summary.appendChild(li);
+    });
+    document.getElementById('subtotal').textContent = formatBRL(Cart.subtotalCents());
+    document.getElementById('total').textContent = formatBRL(Cart.subtotalCents());
+    document.getElementById('consultWarning').style.display = Cart.hasConsult() ? 'block' : 'none';
+
+    initMap();
+
+    // Auto-lookup se já tem CEP completo
+    if (document.getElementById('cep').value.length === 9) {
+        document.getElementById('step1').classList.add('done');
+        updateMapForAddress();
+    }
+
+    // Update map quando alterar endereço
+    ['street', 'number', 'city', 'state'].forEach(id => {
+        document.getElementById(id).addEventListener('blur', updateMapForAddress);
+    });
+});
+</script>
+
+</body>
+</html>

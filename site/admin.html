@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin — Flor Em Tina</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-wrap { max-width: 1300px; margin: 24px auto; padding: 0 24px; }
+        .grid-2 { display: grid; grid-template-columns: 380px 1fr; gap: 24px; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+        .panel { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+        .panel h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--green-dark);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+        .product-row {
+            display: grid;
+            grid-template-columns: 60px 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .product-row img {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: var(--green-pale);
+        }
+        .product-row .ph { width:60px; height:60px; background: var(--green-pale); border-radius: 10px; display:flex; align-items:center; justify-content:center; font-size: 28px; }
+        .product-row h4 { font-size: 0.95rem; }
+        .product-row .meta { font-size: 0.75rem; color: var(--text-light); }
+        .small-btn { padding: 4px 10px; font-size: 0.75rem; border-radius: 8px; border: none; cursor: pointer; }
+        .small-btn:not(:disabled):hover { transform: translateY(-1px); }
+        .img-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .img-preview img {
+            width: 100%;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: var(--green-pale);
+        }
+        .img-preview .img-rm {
+            position: relative;
+            cursor: pointer;
+        }
+        .img-preview .img-rm::after {
+            content: '✕';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+        .price-toggle {
+            display: flex;
+            gap: 0;
+            border-radius: 30px;
+            overflow: hidden;
+            border: 2px solid var(--green-medium);
+            margin-bottom: 14px;
+        }
+        .price-toggle button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--green-medium);
+            transition: var(--transition);
+        }
+        .price-toggle button.active {
+            background: var(--green-medium);
+            color: white;
+        }
+        .multi-cat {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 10px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .multi-cat label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .multi-cat label:hover { background: var(--green-pale); }
+        .multi-cat input[type="checkbox"] { width: auto; }
+        .multi-cat .indent { padding-left: 24px; }
+        .multi-cat .indent.lvl-2 { padding-left: 48px; }
+        .multi-cat .indent.lvl-3 { padding-left: 72px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-inner">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">🌸</div>
+            <div class="logo-text"><h1>Flor Em Tina</h1><span>Painel Admin</span></div>
+        </a>
+        <nav>
+            <a href="index.html">Loja</a>
+            <a href="#" onclick="API.logout(); location.href='login.html'; return false;">Sair</a>
+        </nav>
+    </div>
+</header>
+
+<div class="admin-wrap">
+    <div class="tabs">
+        <div class="tab active" data-tab="products">📦 Produtos</div>
+        <div class="tab" data-tab="categories">🌳 Categorias</div>
+        <div class="tab" data-tab="orders">🧾 Pedidos</div>
+    </div>
+
+    <!-- ============== PRODUTOS ============== -->
+    <div class="tab-pane" id="tab-products">
+        <div class="grid-2">
+            <div class="panel">
+                <h3 id="productFormTitle">Cadastrar Produto</h3>
+                <form id="productForm">
+                    <input type="hidden" id="prodId">
+                    <div class="field">
+                        <label>Nome *</label>
+                        <input type="text" id="prodName" required>
+                    </div>
+                    <div class="field">
+                        <label>Slug (URL)</label>
+                        <input type="text" id="prodSlug" placeholder="auto-gerado se vazio">
+                    </div>
+                    <div class="field">
+                        <label>Descrição</label>
+                        <textarea id="prodDesc" rows="4"></textarea>
+                    </div>
+
+                    <div class="price-toggle">
+                        <button type="button" id="priceModePrice" class="active" onclick="setPriceMode('price')">Preço fixo</button>
+                        <button type="button" id="priceModeConsult" onclick="setPriceMode('consult')">Sob consulta</button>
+                    </div>
+
+                    <div class="field" id="priceField">
+                        <label>Preço (R$)</label>
+                        <input type="number" id="prodPrice" step="0.01" min="0" placeholder="129.90">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label>Estoque</label>
+                            <input type="number" id="prodStock" min="0" value="0">
+                        </div>
+                        <div class="field">
+                            <label>Peso (kg)</label>
+                            <input type="number" id="prodWeight" step="0.001" min="0" placeholder="0.5">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Imagens (URLs separadas por vírgula)</label>
+                        <input type="text" id="prodImages" placeholder="https://...jpg, https://...jpg">
+                        <div class="img-preview" id="imgPreview"></div>
+                    </div>
+
+                    <div class="field">
+                        <label>Categorias (selecione uma ou mais)</label>
+                        <div class="multi-cat" id="prodCategories">
+                            <p class="muted">Carregando...</p>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;">
+                            <input type="checkbox" id="prodActive" checked style="width:auto;"> Ativo (aparece na loja)
+                        </label>
+                    </div>
+
+                    <div class="error-msg" id="prodErr"></div>
+
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">Salvar</button>
+                        <button type="button" class="btn btn-ghost" onclick="resetProductForm()">Limpar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel">
+                <h3>
+                    Produtos cadastrados
+                    <input type="text" id="prodSearch" placeholder="Buscar..." style="font-size: 0.85rem; padding: 6px 12px; border: 2px solid #e5e7eb; border-radius: 20px; max-width: 200px;" oninput="renderProducts()">
+                </h3>
+                <div id="productsList">
+                    <p class="muted">Carregando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== CATEGORIAS ============== -->
+    <div class="tab-pane" id="tab-categories" style="display:none;">
+        <div class="grid-2">
+            <div class="panel">
+                <h3 id="catFormTitle">Nova Categoria</h3>
+                <form id="catForm">
+                    <input type="hidden" id="catId">
+                    <div class="field">
+                        <label>Nome *</label>
+                        <input type="text" id="catName" required>
+                    </div>
+                    <div class="field">
+                        <label>Slug (URL)</label>
+                        <input type="text" id="catSlug" placeholder="auto-gerado se vazio">
+                    </div>
+                    <div class="field">
+                        <label>Ícone (emoji)</label>
+                        <input type="text" id="catIcon" placeholder="🌱" maxlength="4">
+                    </div>
+                    <div class="field">
+                        <label>Categoria-pai</label>
+                        <select id="catParent">
+                            <option value="">— (raiz)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Ordem</label>
+                        <input type="number" id="catSortOrder" value="0">
+                    </div>
+                    <div class="error-msg" id="catErr"></div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">Salvar</button>
+                        <button type="button" class="btn btn-ghost" onclick="resetCatForm()">Limpar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel">
+                <h3>Árvore de Categorias</h3>
+                <ul class="tree" id="catTree">
+                    <li class="muted">Carregando...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== PEDIDOS ============== -->
+    <div class="tab-pane" id="tab-orders" style="display:none;">
+        <div class="panel">
+            <div class="toolbar">
+                <h2>Pedidos</h2>
+                <button class="btn btn-secondary" onclick="loadOrders()">↻ Atualizar</button>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Cliente</th>
+                        <th>Cidade</th>
+                        <th>Total</th>
+                        <th>Pagamento</th>
+                        <th>Status</th>
+                        <th>Criado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="ordersBody">
+                    <tr><td colspan="8" class="muted">Carregando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="api.js"></script>
+<script>
+if (!requireAuth(true)) throw new Error('admin only');
+
+let allCategories = [];
+let allCategoriesTree = [];
+let allProducts = [];
+let priceMode = 'price';
+
+// ====== TABS ======
+document.querySelectorAll('.tab').forEach(t => {
+    t.onclick = () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+        document.getElementById('tab-' + t.dataset.tab).style.display = 'block';
+        if (t.dataset.tab === 'orders') loadOrders();
+    };
+});
+
+// ============ CATEGORIES ============
+async function loadCategories() {
+    allCategories = await API.categoriesFlat() || [];
+    allCategoriesTree = await API.categoryTree() || [];
+    renderCatTree();
+    renderCatParentSelect();
+    renderProductCategoriesPicker();
+}
+function renderCatTree() {
+    const tree = document.getElementById('catTree');
+    tree.innerHTML = '';
+    if (!allCategoriesTree.length) {
+        tree.innerHTML = '<li class="muted">Nenhuma categoria ainda. Crie a primeira!</li>';
+        return;
+    }
+    function buildList(items) {
+        const ul = document.createElement('ul');
+        items.forEach(c => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span>${c.icon || '📁'} <strong>${escapeHTML(c.name)}</strong> <small class="muted">/${escapeHTML(c.slug)}</small></span>
+                <span class="cat-actions">
+                    <button onclick="editCategory('${c.id}')">✏️</button>
+                    <button onclick="deleteCategory('${c.id}')">🗑️</button>
+                </span>`;
+            if (c.children && c.children.length) {
+                li.appendChild(buildList(c.children));
+            }
+            ul.appendChild(li);
+        });
+        return ul;
+    }
+    tree.appendChild(buildList(allCategoriesTree));
+}
+function renderCatParentSelect() {
+    const sel = document.getElementById('catParent');
+    sel.innerHTML = '<option value="">— (raiz)</option>';
+    function add(items, depth) {
+        items.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = '— '.repeat(depth) + (c.icon || '') + ' ' + c.name;
+            sel.appendChild(opt);
+            if (c.children && c.children.length) add(c.children, depth + 1);
+        });
+    }
+    add(allCategoriesTree, 0);
+}
+function renderProductCategoriesPicker() {
+    const wrap = document.getElementById('prodCategories');
+    if (!allCategoriesTree.length) {
+        wrap.innerHTML = '<p class="muted">Cadastre categorias primeiro.</p>';
+        return;
+    }
+    wrap.innerHTML = '';
+    function add(items, depth) {
+        items.forEach(c => {
+            const lvl = Math.min(depth, 3);
+            const lbl = document.createElement('label');
+            lbl.className = 'indent lvl-' + lvl;
+            lbl.innerHTML = `<input type="checkbox" data-cat="${c.id}"> ${c.icon || '📁'} ${escapeHTML(c.name)}`;
+            wrap.appendChild(lbl);
+            if (c.children && c.children.length) add(c.children, depth + 1);
+        });
+    }
+    add(allCategoriesTree, 0);
+}
+function getSelectedCategories() {
+    return Array.from(document.querySelectorAll('#prodCategories input:checked')).map(i => i.dataset.cat);
+}
+
+document.getElementById('catForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const errEl = document.getElementById('catErr');
+    errEl.classList.remove('show');
+    const id = document.getElementById('catId').value;
+    const data = {
+        name: document.getElementById('catName').value.trim(),
+        slug: document.getElementById('catSlug').value.trim(),
+        icon: document.getElementById('catIcon').value.trim(),
+        parent_id: document.getElementById('catParent').value || null,
+        sort_order: parseInt(document.getElementById('catSortOrder').value || '0', 10),
+    };
+    try {
+        if (id) await API.updateCategory(id, data);
+        else    await API.createCategory(data);
+        resetCatForm();
+        await loadCategories();
+    } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.add('show');
+    }
+});
+function editCategory(id) {
+    const c = allCategories.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('catId').value = c.id;
+    document.getElementById('catName').value = c.name;
+    document.getElementById('catSlug').value = c.slug;
+    document.getElementById('catIcon').value = c.icon || '';
+    document.getElementById('catParent').value = c.parent_id || '';
+    document.getElementById('catSortOrder').value = c.sort_order || 0;
+    document.getElementById('catFormTitle').textContent = 'Editar Categoria';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function deleteCategory(id) {
+    if (!confirm('Excluir esta categoria? (Subcategorias e vínculos com produtos também são removidos.)')) return;
+    try {
+        await API.deleteCategory(id);
+        await loadCategories();
+    } catch (e) { alert(e.message); }
+}
+function resetCatForm() {
+    document.getElementById('catForm').reset();
+    document.getElementById('catId').value = '';
+    document.getElementById('catFormTitle').textContent = 'Nova Categoria';
+}
+
+// ============ PRODUTOS ============
+async function loadProducts() {
+    allProducts = await API.products({ include_inactive: '1', limit: 500 });
+    renderProducts();
+}
+function renderProducts() {
+    const list = document.getElementById('productsList');
+    const term = (document.getElementById('prodSearch').value || '').toLowerCase();
+    const filtered = allProducts.filter(p =>
+        !term || p.name.toLowerCase().includes(term) || (p.description||'').toLowerCase().includes(term)
+    );
+    if (!filtered.length) {
+        list.innerHTML = '<p class="muted text-center">Nenhum produto.</p>';
+        return;
+    }
+    list.innerHTML = '';
+    filtered.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'product-row';
+        const img = (p.images && p.images[0]) || '';
+        row.innerHTML = `
+            ${img ? `<img src="${escapeHTML(img)}" alt="">` : `<div class="ph">🌱</div>`}
+            <div>
+                <h4>${escapeHTML(p.name)}</h4>
+                <div class="meta">${formatBRL(p.price_cents)} · estoque ${p.stock} · ${p.is_active ? 'ativo' : '<span style="color:var(--red)">inativo</span>'}</div>
+            </div>
+            <div style="display:flex; gap:6px;">
+                <button class="small-btn" style="background:var(--green-pale); color:var(--green-dark)" onclick='editProduct(${JSON.stringify(p).replace(/\'/g, "&#39;")})'>✏️</button>
+                <button class="small-btn" style="background:#fee2e2; color:#991b1b" onclick="deleteProduct('${p.id}')">🗑️</button>
+            </div>
+        `;
+        list.appendChild(row);
+    });
+}
+
+function setPriceMode(mode) {
+    priceMode = mode;
+    document.getElementById('priceModePrice').classList.toggle('active', mode === 'price');
+    document.getElementById('priceModeConsult').classList.toggle('active', mode === 'consult');
+    document.getElementById('priceField').style.display = mode === 'price' ? 'block' : 'none';
+}
+
+document.getElementById('prodImages').addEventListener('input', e => {
+    const urls = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+    const wrap = document.getElementById('imgPreview');
+    wrap.innerHTML = '';
+    urls.forEach(u => {
+        const img = document.createElement('img');
+        img.src = u;
+        img.onerror = () => { img.style.opacity = '0.3'; };
+        wrap.appendChild(img);
+    });
+});
+
+document.getElementById('productForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const errEl = document.getElementById('prodErr');
+    errEl.classList.remove('show');
+    const id = document.getElementById('prodId').value;
+    const priceStr = document.getElementById('prodPrice').value;
+    const isConsult = priceMode === 'consult';
+    const priceCents = !isConsult && priceStr ? Math.round(parseFloat(priceStr) * 100) : null;
+
+    const images = document.getElementById('prodImages').value
+        .split(',').map(s => s.trim()).filter(Boolean);
+
+    const weightStr = document.getElementById('prodWeight').value;
+
+    const payload = {
+        name: document.getElementById('prodName').value.trim(),
+        slug: document.getElementById('prodSlug').value.trim(),
+        description: document.getElementById('prodDesc').value.trim(),
+        price_cents: priceCents,
+        under_consult: isConsult,
+        images,
+        stock: parseInt(document.getElementById('prodStock').value || '0', 10),
+        weight_kg: weightStr ? parseFloat(weightStr) : null,
+        is_active: document.getElementById('prodActive').checked,
+        category_ids: getSelectedCategories(),
+    };
+
+    try {
+        if (id) await API.updateProduct(id, payload);
+        else    await API.createProduct(payload);
+        resetProductForm();
+        await loadProducts();
+    } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.add('show');
+    }
+});
+
+function editProduct(p) {
+    document.getElementById('prodId').value = p.id;
+    document.getElementById('prodName').value = p.name;
+    document.getElementById('prodSlug').value = p.slug;
+    document.getElementById('prodDesc').value = p.description || '';
+    if (p.price_cents == null) {
+        setPriceMode('consult');
+        document.getElementById('prodPrice').value = '';
+    } else {
+        setPriceMode('price');
+        document.getElementById('prodPrice').value = (p.price_cents / 100).toFixed(2);
+    }
+    document.getElementById('prodStock').value = p.stock || 0;
+    document.getElementById('prodWeight').value = p.weight_kg || '';
+    document.getElementById('prodImages').value = (p.images || []).join(', ');
+    document.getElementById('prodImages').dispatchEvent(new Event('input'));
+    document.getElementById('prodActive').checked = p.is_active !== false;
+    Array.from(document.querySelectorAll('#prodCategories input')).forEach(i => {
+        i.checked = (p.category_ids || []).includes(i.dataset.cat);
+    });
+    document.getElementById('productFormTitle').textContent = 'Editar Produto';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function deleteProduct(id) {
+    if (!confirm('Remover este produto?')) return;
+    try {
+        await API.deleteProduct(id);
+        await loadProducts();
+    } catch (e) { alert(e.message); }
+}
+function resetProductForm() {
+    document.getElementById('productForm').reset();
+    document.getElementById('prodId').value = '';
+    document.getElementById('imgPreview').innerHTML = '';
+    document.getElementById('prodActive').checked = true;
+    setPriceMode('price');
+    document.getElementById('productFormTitle').textContent = 'Cadastrar Produto';
+    Array.from(document.querySelectorAll('#prodCategories input')).forEach(i => i.checked = false);
+}
+
+// ============ ORDERS ============
+async function loadOrders() {
+    const body = document.getElementById('ordersBody');
+    body.innerHTML = '<tr><td colspan="8" class="muted">Carregando...</td></tr>';
+    try {
+        const orders = await API.adminOrders();
+        if (!orders.length) {
+            body.innerHTML = '<tr><td colspan="8" class="muted text-center">Nenhum pedido ainda.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        orders.forEach(o => {
+            const tr = document.createElement('tr');
+            const dt = new Date(o.created_at).toLocaleString('pt-BR');
+            const payBadge = o.payment_status === 'paid'
+                ? '<span class="badge paid">Pago</span>'
+                : '<span class="badge pending">Pendente</span>';
+            const statusBadge = `<span class="badge ${o.status}">${escapeHTML(o.status)}</span>`;
+            tr.innerHTML = `
+                <td><code>${o.id.substring(0,8)}</code></td>
+                <td>
+                    <div>${escapeHTML(o.customer_name)}</div>
+                    <small class="muted">${escapeHTML(o.customer_email)}</small>
+                </td>
+                <td>${escapeHTML(o.address.city || '')}/${escapeHTML(o.address.state || '')}</td>
+                <td><strong>${formatBRL(o.total_cents)}</strong></td>
+                <td>${payBadge}</td>
+                <td>${statusBadge}</td>
+                <td>${dt}</td>
+                <td>
+                    ${o.status === 'paid' ? `<button class="small-btn btn-primary" style="background:var(--green-medium); color:white" onclick="markReady('${o.id}')">✅ Pronto</button>` : ''}
+                </td>
+            `;
+            body.appendChild(tr);
+        });
+    } catch (e) {
+        body.innerHTML = '<tr><td colspan="8" style="color:var(--red)">' + escapeHTML(e.message) + '</td></tr>';
+    }
+}
+
+async function markReady(orderID) {
+    const msg = prompt('Mensagem para o cliente:', 'Seu pedido está pronto! Vamos entrar em contato para combinar a entrega.');
+    if (msg === null) return;
+    try {
+        await API.markReady(orderID, msg);
+        alert('Cliente notificado!');
+        loadOrders();
+    } catch (e) { alert(e.message); }
+}
+
+// ============ INIT ============
+window.addEventListener('DOMContentLoaded', async () => {
+    await loadCategories();
+    await loadProducts();
+});
+</script>
+
+</body>
+</html>

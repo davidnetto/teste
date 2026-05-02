@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produto — Flor Em Tina</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ===== BREADCRUMB ===== */
+        .breadcrumb {
+            max-width: 1100px;
+            margin: 24px auto 0;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: var(--text-light);
+            flex-wrap: wrap;
+        }
+        .breadcrumb a { color: var(--green-medium); font-weight: 500; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { opacity: 0.5; }
+
+        /* ===== PRODUCT LAYOUT ===== */
+        .product-page {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 32px 24px 60px;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+        @media (max-width: 768px) {
+            .product-page { grid-template-columns: 1fr; gap: 32px; }
+        }
+
+        /* ===== GALLERY ===== */
+        .gallery { position: sticky; top: 90px; }
+        .gallery-main {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 24px;
+            overflow: hidden;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+            cursor: zoom-in;
+        }
+        .gallery-main img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            transition: transform 0.4s ease;
+        }
+        .gallery-main img:hover { transform: scale(1.04); }
+        .gallery-fallback { font-size: 100px; }
+        .gallery-thumbs {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .gallery-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #eee;
+            cursor: pointer;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .gallery-thumb:hover { border-color: var(--green-medium); }
+        .gallery-thumb.active { border-color: var(--green-dark); box-shadow: 0 0 0 2px rgba(74, 103, 65, 0.1); }
+        .gallery-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        /* ===== INFO ===== */
+        .product-detail-info { display: flex; flex-direction: column; gap: 20px; }
+
+        .product-detail-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--green-dark);
+            line-height: 1.2;
+        }
+
+        .product-detail-price {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--green-dark);
+        }
+        .product-detail-price.consult {
+            font-size: 1.3rem;
+            color: var(--text-medium);
+            font-style: italic;
+            font-weight: 500;
+        }
+        .price-note {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        .stock-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 30px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            width: fit-content;
+        }
+        .stock-badge.in { background: #dcfce7; color: #166534; }
+        .stock-badge.out { background: #fee2e2; color: #991b1b; }
+        .stock-badge.low { background: #fef3c7; color: #92400e; }
+
+        .product-detail-desc {
+            color: var(--text-medium);
+            line-height: 1.8;
+            font-size: 0.95rem;
+            white-space: pre-line;
+        }
+
+        .divider { border: none; border-top: 1px solid #eee; }
+
+        /* ===== QTY + ADD ===== */
+        .add-to-cart-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            border: 2px solid #e5e7eb;
+            border-radius: 30px;
+            overflow: hidden;
+            background: white;
+        }
+        .qty-control button {
+            width: 40px;
+            height: 44px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--green-dark);
+            transition: background 0.2s;
+        }
+        .qty-control button:hover { background: var(--green-pale); }
+        .qty-control span {
+            min-width: 36px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .btn-add-big {
+            flex: 1;
+            min-width: 180px;
+            padding: 14px 28px;
+            font-size: 1rem;
+        }
+        .btn-add-big.added {
+            background: linear-gradient(135deg, var(--green-light), var(--green-medium));
+        }
+
+        /* ===== SPECS TABLE ===== */
+        .specs {
+            background: var(--cream);
+            border-radius: 14px;
+            padding: 18px 20px;
+        }
+        .specs h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.88rem;
+        }
+        .spec-row:last-child { border-bottom: none; }
+        .spec-row span:first-child { color: var(--text-medium); }
+        .spec-row span:last-child { font-weight: 600; color: var(--text-dark); }
+
+        /* ===== RELATED ===== */
+        .related-section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px 60px;
+        }
+        .related-section h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            color: var(--green-dark);
+            margin-bottom: 24px;
+        }
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .related-card {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .related-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+        .related-img {
+            height: 160px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .related-img img {
+            max-width: 90%;
+            max-height: 90%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+        .related-info { padding: 12px 14px; }
+        .related-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+        .related-price { font-size: 0.95rem; color: var(--green-dark); font-weight: 600; }
+        .related-price.consult { color: var(--text-medium); font-style: italic; font-weight: 400; font-size: 0.82rem; }
+
+        /* ===== LIGHTBOX ===== */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .lightbox.show { display: flex; animation: fadeIn 0.2s ease; }
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 28px;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+            background: none;
+            border: none;
+            line-height: 1;
+        }
+
+        /* ===== SKELETON ===== */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 12px;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        footer {
+            background: var(--green-dark);
+            color: white;
+            padding: 32px 24px;
+            text-align: center;
+            font-size: 0.85rem;
+            opacity: 0.95;
+        }
+    </style>
+</head>
+<body>
+
+<header id="main-header" data-turbo-permanent>
+    <div class="header-inner">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">🌸</div>
+            <div class="logo-text"><h1>Flor Em Tina</h1><span>Plantas & Jardim</span></div>
+        </a>
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="catalogo.html">Catálogo Completo</a>
+            <a href="index.html#entrega">Entrega</a>
+            <span id="userArea" style="display: flex; gap: 8px; align-items: center;"></span>
+            <button class="cart-btn" onclick="toggleCart()">🛒 <span class="cart-count" id="cartCount">0</span></button>
+        </nav>
+    </div>
+</header>
+
+<div id="spa-content">
+    <!-- BREADCRUMB -->
+    <nav class="breadcrumb" id="breadcrumb" aria-label="breadcrumb">
+        <a href="index.html">Início</a>
+        <span>›</span>
+        <a href="catalogo.html">Catálogo</a>
+        <span>›</span>
+        <span id="breadcrumbName">...</span>
+    </nav>
+
+    <!-- PRODUCT -->
+    <main class="product-page" id="productPage">
+        <!-- skeleton enquanto carrega -->
+        <div class="gallery">
+            <div class="gallery-main skeleton" style="aspect-ratio:1;"></div>
+            <div class="gallery-thumbs" style="margin-top:14px;">
+                <div class="skeleton" style="width:72px;height:72px;border-radius:12px;"></div>
+                <div class="skeleton" style="width:72px;height:72px;border-radius:12px;"></div>
+            </div>
+        </div>
+        <div class="product-detail-info">
+            <div class="skeleton" style="height:48px;width:80%;"></div>
+            <div class="skeleton" style="height:36px;width:40%;"></div>
+            <div class="skeleton" style="height:100px;"></div>
+            <div class="skeleton" style="height:52px;"></div>
+        </div>
+    </main>
+
+    <!-- RELATED -->
+    <section class="related-section" id="relatedSection" style="display:none;">
+        <h3>Você também pode gostar 🌿</h3>
+        <div class="related-grid" id="relatedGrid"></div>
+    </section>
+</div>
+
+<!-- CARRINHO -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+    <div class="cart-header">
+        <h3>🛒 Seu Carrinho</h3>
+        <button class="cart-close" onclick="toggleCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer">
+        <div class="cart-total">
+            <span>Subtotal:</span>
+            <strong id="cartTotal">R$ 0,00</strong>
+        </div>
+        <p class="muted" id="consultNote" style="display:none;margin-bottom:12px;font-size:0.8rem;">
+            ⚠️ Há itens "sob consulta" no carrinho. Iremos calcular o valor e entrar em contato.
+        </p>
+        <button class="btn btn-primary checkout-btn" onclick="goToCheckout()">Finalizar Pedido 💚</button>
+    </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <img id="lightboxImg" src="" alt="">
+</div>
+
+<footer>© 2026 Florentina — Todos os direitos reservados</footer>
+
+<script src="api.js"></script>
+<script>
+let product = null;
+let quantity = 1;
+let currentImg = 0;
+
+// ===== LIGHTBOX =====
+function openLightbox(src) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('show');
+}
+
+// ===== GALLERY =====
+function buildGallery(images) {
+    const main = document.createElement('div');
+    main.className = 'gallery-main';
+    main.title = 'Clique para ampliar';
+
+    if (!images || !images.length) {
+        main.innerHTML = '<div class="gallery-fallback">🌱</div>';
+        main.style.cursor = 'default';
+        return { main, thumbs: document.createElement('div') };
+    }
+
+    const img = document.createElement('img');
+    img.src = images[0];
+    img.alt = product.name;
+    img.onerror = () => { img.style.display='none'; main.innerHTML='<div class="gallery-fallback">🌱</div>'; };
+    main.appendChild(img);
+    main.onclick = () => openLightbox(img.src);
+
+    const thumbsEl = document.createElement('div');
+    thumbsEl.className = 'gallery-thumbs';
+
+    images.forEach((src, i) => {
+        const t = document.createElement('div');
+        t.className = 'gallery-thumb' + (i === 0 ? ' active' : '');
+        const ti = document.createElement('img');
+        ti.src = src;
+        ti.alt = '';
+        ti.onerror = () => { ti.style.display='none'; t.innerHTML='🌱'; };
+        t.appendChild(ti);
+        t.onclick = () => {
+            currentImg = i;
+            img.src = src;
+            thumbsEl.querySelectorAll('.gallery-thumb').forEach((el, j) => el.classList.toggle('active', j === i));
+        };
+        thumbsEl.appendChild(t);
+    });
+
+    return { main, thumbs: thumbsEl };
+}
+
+// ===== RENDER PRODUCT =====
+function renderProduct(p) {
+    product = p;
+    document.title = p.name + ' — Flor Em Tina';
+    const breadName = document.getElementById('breadcrumbName');
+    if(breadName) breadName.textContent = p.name;
+
+    const images = (p.images || []).filter(Boolean);
+    const { main: galleryMain, thumbs: galleryThumbs } = buildGallery(images);
+
+    const galleryEl = document.createElement('div');
+    galleryEl.className = 'gallery';
+    galleryEl.appendChild(galleryMain);
+    if (images.length > 1) galleryEl.appendChild(galleryThumbs);
+
+    const info = document.createElement('div');
+    info.className = 'product-detail-info';
+
+    const nameEl = document.createElement('h1');
+    nameEl.className = 'product-detail-name';
+    nameEl.textContent = p.name;
+
+    const stockEl = document.createElement('div');
+    if (p.price_cents == null) {
+        stockEl.innerHTML = '';
+    } else if (p.stock <= 0) {
+        stockEl.innerHTML = '<span class="stock-badge out">⛔ Esgotado</span>';
+    } else if (p.stock <= 5) {
+        stockEl.innerHTML = `<span class="stock-badge low">⚠️ Últimas ${p.stock} unidades</span>`;
+    } else {
+        stockEl.innerHTML = '<span class="stock-badge in">✅ Em estoque</span>';
+    }
+
+    const priceWrap = document.createElement('div');
+    if (p.price_cents == null) {
+        priceWrap.innerHTML = `<div class="product-detail-price consult">Sob consulta</div>`;
+    } else {
+        priceWrap.innerHTML = `<div class="product-detail-price">${formatBRL(p.price_cents)}</div>`;
+    }
+
+    const descEl = document.createElement('div');
+    descEl.className = 'product-detail-desc';
+    descEl.textContent = p.description || 'Sem descrição disponível.';
+
+    const addRow = document.createElement('div');
+    addRow.className = 'add-to-cart-row';
+
+    const qtyEl = document.createElement('div');
+    qtyEl.className = 'qty-control';
+    qtyEl.innerHTML = `<button onclick="changeQty(-1)">−</button><span id="qtyDisplay">1</span><button onclick="changeQty(1)">+</button>`;
+
+    const addBtn = document.createElement('button');
+    addBtn.id = 'addBtn';
+    addBtn.className = 'btn btn-primary btn-add-big';
+    const outOfStock = p.price_cents != null && p.stock <= 0;
+    addBtn.disabled = outOfStock;
+    addBtn.textContent = outOfStock ? 'Esgotado' : (p.price_cents == null ? '📩 Solicitar Orçamento' : '🛒 Adicionar');
+    addBtn.onclick = handleAdd;
+
+    if (!outOfStock) addRow.appendChild(qtyEl);
+    addRow.appendChild(addBtn);
+
+    info.append(nameEl, stockEl, priceWrap, descEl, addRow);
+
+    const page = document.getElementById('productPage');
+    if(page) {
+        page.innerHTML = '';
+        page.appendChild(galleryEl);
+        page.appendChild(info);
+    }
+    if (p.category_ids && p.category_ids.length) loadRelated(p.category_ids[0], p.id);
+}
+
+function changeQty(delta) {
+    quantity = Math.max(1, quantity + delta);
+    const display = document.getElementById('qtyDisplay');
+    if (display) display.textContent = quantity;
+}
+
+function handleAdd() {
+    if (!product) return;
+    for (let i = 0; i < quantity; i++) Cart.add(product);
+    const btn = document.getElementById('addBtn');
+    if (!btn) return;
+    const original = btn.textContent;
+    btn.textContent = '✅ Adicionado!';
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1500);
+    toggleCart();
+}
+
+async function loadRelated(categoryId, excludeId) {
+    try {
+        const list = await API.products({ category: categoryId, limit: 5 });
+        const filtered = list.filter(p => p.id !== excludeId).slice(0, 4);
+        if (!filtered.length) return;
+        const grid = document.getElementById('relatedGrid');
+        if(!grid) return;
+        grid.innerHTML = filtered.map(p => {
+            const img = (p.images && p.images[0]) || '';
+            return `<a class="related-card" href="produto.html?id=${p.id}">
+                <div class="related-img">${img ? `<img src="${escapeHTML(img)}">` : '🌱'}</div>
+                <div class="related-info"><div class="related-name">${escapeHTML(p.name)}</div><div class="related-price">${formatBRL(p.price_cents)}</div></div>
+            </a>`;
+        }).join('');
+        document.getElementById('relatedSection').style.display = 'block';
+    } catch (_) {}
+}
+
+// toggleCart is defined globally in api.js
+
+function renderCart() {
+    const items = Cart.items();
+    const countEl = document.getElementById('cartCount');
+    if(countEl) countEl.textContent = Cart.count();
+    const totalEl = document.getElementById('cartTotal');
+    if(totalEl) totalEl.textContent = formatBRL(Cart.subtotalCents());
+    const list = document.getElementById('cartItems');
+    if(!list) return;
+    if (!items.length) { list.innerHTML = '<div class="cart-empty"><p>Seu carrinho está vazio</p></div>'; return; }
+    list.innerHTML = items.map(it => `
+        <div class="cart-item">
+            ${it.image ? `<img src="${escapeHTML(it.image)}">` : '🌱'}
+            <div class="cart-item-info">
+                <h4>${escapeHTML(it.name)}</h4>
+                <div class="price">${it.under_consult ? 'Sob consulta' : formatBRL((it.unit_cents || 0) * it.quantity)}</div>
+                <div class="cart-item-qty">
+                    <button onclick="Cart.setQty('${it.product_id}', ${it.quantity - 1})">−</button>
+                    <span>${it.quantity}</span>
+                    <button onclick="Cart.setQty('${it.product_id}', ${it.quantity + 1})">+</button>
+                </div>
+            </div>
+            <button style="background:transparent;border:none;cursor:pointer;color:var(--red);" onclick="Cart.remove('${it.product_id}')">🗑️</button>
+        </div>`).join('');
+}
+
+async function initProductPage() {
+    const page = document.getElementById('productPage');
+    if(!page) return; // Not on product page
+
+    Cart.onChange(renderCart);
+    let id = getQuery('id') || getQuery('slug') || getQuery('url');
+    if (!id) return;
+
+    // Se vier uma URL completa do catálogo, extrai apenas o slug (parte final)
+    if (id.includes('://')) {
+        const parts = id.split('/');
+        id = parts[parts.length - 1] || parts[parts.length - 2];
+    }
+
+    try {
+        const p = await API.product(id);
+        renderProduct(p);
+    } catch (e) {
+        page.innerHTML = '<p class="text-center">Produto não encontrado.</p>';
+    }
+}
+
+document.addEventListener("turbo:load", initProductPage);
+if (document.readyState !== "loading") initProductPage();
+</script>
+</body>
+</html>
