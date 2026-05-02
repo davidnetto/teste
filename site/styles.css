@@ -132,49 +132,34 @@ nav a:hover, nav a.active {
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
 .cart-btn {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50% !important;
-    background: var(--green-dark);
+    background: linear-gradient(135deg, var(--green-medium), var(--green-dark));
     color: white !important;
-    display: flex;
+    padding: 10px 20px !important;
+    border-radius: 30px !important;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    gap: 8px;
     cursor: pointer;
     border: none;
-    z-index: 1000;
-    padding: 0 !important;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 .cart-btn:hover {
-    transform: translateY(-4px) scale(1.05);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-}
-.cart-btn:active {
-    transform: scale(0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 140, 63, 0.3);
 }
 
 .cart-count {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    background: #ff4757;
+    background: #ff6b6b;
     color: white;
-    font-size: 0.75rem;
-    min-width: 22px;
-    height: 22px;
-    border-radius: 11px;
+    font-size: 0.7rem;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
-    padding: 0 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-weight: 700;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -716,17 +701,22 @@ section { padding: 60px 24px; }
     #userArea a[href="admin.html"]::before { content: '⚙️'; font-size: 1.3rem; filter: saturate(0.8); }
     #userArea button::before { content: '🚪'; font-size: 1.3rem; filter: saturate(0.8); }
 
-    /* Ajuste do botão do carrinho - já tem o ícone no texto do HTML, mas o formato precisa alinhar */
+    /* Ajuste do botão do carrinho para ficar no Topo Direto (Header) */
     .cart-btn {
-        flex-direction: column;
-        font-size: 0.65rem !important; 
-        position: relative;
+        position: fixed !important;
+        top: 12px;
+        right: 16px;
+        bottom: auto !important;
+        left: auto !important;
+        padding: 8px 12px !important;
+        border-radius: 30px !important;
+        font-size: 0.85rem !important;
+        z-index: 1050;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        margin: 0 !important;
     }
     
     .cart-count {
-        position: absolute;
-        top: -4px;
-        right: -8px;
         font-size: 0.65rem !important;
         padding: 2px 6px !important;
     }
