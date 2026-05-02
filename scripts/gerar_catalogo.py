@@ -564,7 +564,7 @@ function rp(f,v){{
 function addToCart(btn, id){{
   var p=PLANTS.find(x=>x.id===id);
   if(!p)return;
-  if(window.Cart) {{
+  if(typeof Cart !== 'undefined') {{
     Cart.add({{
       id: p.id,
       name: p.nome,
