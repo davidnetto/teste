@@ -564,7 +564,14 @@ function rp(f,v){{
 function addToCart(btn, id){{
   var p=PLANTS.find(x=>x.id===id);
   if(!p)return;
-  if(window.Cart) Cart.add(p);
+  if(window.Cart) {{
+    Cart.add({{
+      id: p.id,
+      name: p.nome,
+      images: p.imagens,
+      price_cents: p.preco_atual ? Math.round(p.preco_atual * 100) : null
+    }});
+  }}
   var orig = btn.innerHTML;
   btn.innerHTML = '✔ Adicionado';
   btn.classList.add('added');
