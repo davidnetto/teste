@@ -4,7 +4,7 @@ integrando com o sistema de navbar/carrinho (api.js e turbo).
 """
 import json, re
 
-INPUT  = "produtos_enriquecidos.json"
+INPUT  = "data/produtos_enriquecidos.json"
 OUTPUT = "site/catalogo.html"
 
 # --- Normalizações e Helpers ---

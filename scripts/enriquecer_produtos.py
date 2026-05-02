@@ -11,9 +11,9 @@ import math
 import random
 from collections import Counter
 
-INPUT_FILE = "produtos.json"
-OUTPUT_JSON = "produtos_enriquecidos.json"
-OUTPUT_CSV = "produtos_enriquecidos.csv"
+INPUT_FILE = "data/produtos.json"
+OUTPUT_JSON = "data/produtos_enriquecidos.json"
+OUTPUT_CSV = "data/produtos_enriquecidos.csv"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Base de conhecimento botânico — (palavras-chave no nome) → atributos

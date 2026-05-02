@@ -18,8 +18,8 @@ from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.plantadelivery.com.br"
 LIST_PATH = "/plantas"
-OUTPUT_JSON = "produtos.json"
-OUTPUT_CSV = "produtos.csv"
+OUTPUT_JSON = "data/produtos.json"
+OUTPUT_CSV = "data/produtos.csv"
 DELAY = 1.0  # segundos entre requests (seja gentil com o servidor)
 
 HEADERS = {
