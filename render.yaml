@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: florentina-app
+    env: docker
+    region: ohio
+    plan: free
+    branch: main
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: florentina-db
+          property: connectionString
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+      - key: POSTGRES_DB
+        value: userapi
+
+databases:
+  - name: florentina-db
+    databaseName: userapi
+    user: postgres
+    plan: free
+    region: ohio

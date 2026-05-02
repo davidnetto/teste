@@ -126,49 +126,51 @@ HTML = f"""<!DOCTYPE html>
         .legend-t{{font-weight:700;opacity:.55;margin-right:2px;text-transform:uppercase;font-size:.65rem;letter-spacing:.5px}}
         .legend-i{{opacity:.85}}
 
-        /* FILTROS */
-        .filters{{background:#fff;border-bottom:1px solid #e8f5e9;padding:18px 24px;
-          position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.06)}}
-        .frow{{display:flex;flex-wrap:wrap;align-items:center;gap:10px;max-width:1400px;margin:0 auto}}
-        .fgroup{{display:flex;flex-wrap:wrap;align-items:center;gap:5px}}
-        .flabel{{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
-          color:var(--g-dark);opacity:.65;white-space:nowrap}}
-        .divid{{width:1px;height:26px;background:#e0e0e0}}
-
-        .chip{{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:999px;
-          font-size:.78rem;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;
-          transition:all .15s;user-select:none;white-space:nowrap;font-weight:500}}
-        .chip:hover{{border-color:var(--g-light);background:var(--g-pale);transform:translateY(-1px)}}
-        .chip.active{{background:var(--g-dark);color:#fff;border-color:var(--g-dark);box-shadow:0 2px 8px rgba(27,67,50,.3)}}
-
-        .chip-sombra.active   {{background:#455a64;border-color:#455a64}}
-        .chip-meia.active     {{background:#f57f17;border-color:#f57f17}}
-        .chip-sol.active      {{background:#e65100;border-color:#e65100}}
-        .chip-baixa.active    {{background:#bf8748;border-color:#bf8748}}
-        .chip-media.active    {{background:#1976d2;border-color:#1976d2}}
-        .chip-alta.active     {{background:#0277bd;border-color:#0277bd}}
-        .chip-dren.active     {{background:#8d6e63;border-color:#8d6e63}}
-        .chip-org.active      {{background:#558b2f;border-color:#558b2f}}
-        .chip-arg.active      {{background:#5d4037;border-color:#5d4037}}
-        .chip-sub.active      {{background:#00695c;border-color:#00695c}}
-
-        .search-w{{flex:1;min-width:160px;max-width:260px}}
-        .search-w input{{width:100%;padding:6px 12px 6px 32px;border-radius:999px;
-          border:1.5px solid #e0e0e0;font-size:.82rem;outline:none;transition:border-color .15s;
-          background:#f9f9f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E") no-repeat 10px center}}
+        /* HEADER E BUSCA */
+        .filters-top{{display:flex;gap:10px;align-items:center;width:100%;max-width:1400px;margin:0 auto;padding:16px 24px;background:#fff;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.06)}}
+        .search-w{{flex:1}}
+        .search-w input{{width:100%;padding:10px 16px 10px 38px;border-radius:12px;
+          border:1px solid #e0e0e0;font-size:.9rem;outline:none;transition:border-color .15s;
+          background:#f9f9f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E") no-repeat 14px center}}
         .search-w input:focus{{border-color:var(--g-light);background-color:#fff}}
-        .btn-clear{{padding:5px 12px;border-radius:999px;font-size:.75rem;
-          border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;color:#999;transition:all .15s}}
-        .btn-clear:hover{{border-color:#ef5350;color:#ef5350}}
+        .btn-toggle-filters{{padding:10px 16px;border-radius:12px;border:1px solid #e0e0e0;background:#fff;font-size:.9rem;font-weight:600;color:var(--g-dark);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:background .2s}}
+        .btn-toggle-filters:hover{{background:var(--g-pale);border-color:var(--g-light)}}
+
+        /* MODAL DE FILTROS */
+        .filter-modal-overlay{{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:none;opacity:0;transition:opacity 0.2s;}}
+        .filter-modal-overlay.open{{display:block;opacity:1;}}
+        .filter-modal{{position:absolute;top:0;right:0;bottom:0;width:100%;max-width:400px;background:#fff;display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);box-shadow:-4px 0 24px rgba(0,0,0,0.1)}}
+        .filter-modal-overlay.open .filter-modal{{transform:translateX(0)}}
+        
+        .fm-header{{padding:16px 20px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;}}
+        .fm-header h3{{font-size:1.1rem;margin:0;color:var(--g-dark);}}
+        .fm-close{{background:none;border:none;font-size:1.2rem;cursor:pointer;color:#999;padding:4px;}}
+        
+        .fm-body{{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:24px;}}
+        .fgroup{{display:flex;flex-direction:column;gap:10px;}}
+        .flabel{{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#aaa;}}
+        .chips-grid{{display:flex;flex-wrap:wrap;gap:8px;}}
+        
+        .chip{{display:inline-flex;align-items:center;padding:8px 14px;border-radius:8px;
+          font-size:.85rem;border:1px solid #e0e0e0;background:#fafafa;cursor:pointer;
+          transition:all .1s;user-select:none;font-weight:500;color:#555;}}
+        .chip:active{{transform:scale(0.96)}}
+        .chip.active{{background:#e8f5e9;color:var(--g-dark);border-color:var(--g-light);font-weight:600}}
+        .chip.active::before{{content:'✔';margin-right:6px;font-size:.7rem;}}
+        
+        .fm-footer{{padding:16px 20px;border-top:1px solid #eee;background:#fff;display:flex;gap:12px;}}
+        .btn-clear{{flex:1;padding:12px;border-radius:8px;font-size:.9rem;font-weight:600;border:1px solid #e0e0e0;background:#fff;cursor:pointer;color:#555;}}
+        .btn-apply{{flex:2;padding:12px;border-radius:8px;font-size:.9rem;font-weight:700;border:none;background:var(--g-dark);color:#fff;cursor:pointer;transition:background .2s;}}
+        .btn-apply:hover{{background:var(--g-mid)}}
+
+        .active-filters-bar{{display:flex;gap:8px;flex-wrap:wrap;padding:0 24px 12px;max-width:1400px;margin:0 auto;}}
+        .active-chip{{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#e8f5e9;color:var(--g-dark);border-radius:16px;font-size:.75rem;font-weight:600;}}
+        .active-chip button{{background:none;border:none;color:inherit;cursor:pointer;font-size:.8rem;}}
 
         /* STATS */
         .stats{{max-width:1400px;margin:0 auto;padding:12px 24px;
           display:flex;align-items:center;gap:10px;font-size:.82rem;color:#777;flex-wrap:wrap}}
         .stats strong{{color:var(--g-dark);font-size:.95rem}}
-        .a-pills{{display:flex;flex-wrap:wrap;gap:5px}}
-        .apill{{background:var(--g-pale);color:var(--g-dark);padding:2px 9px;border-radius:999px;
-          font-size:.72rem;font-weight:600;display:flex;align-items:center;gap:3px}}
-        .apill button{{background:none;border:none;cursor:pointer;color:inherit;padding:0;font-size:.8rem;line-height:1}}
 
         /* GRID */
         .grid{{max-width:1400px;margin:0 auto;
@@ -176,74 +178,40 @@ HTML = f"""<!DOCTYPE html>
           gap:18px;padding:0 24px 48px}}
 
         /* CARD */
-        .card{{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);
-          overflow:hidden;transition:transform .2s,box-shadow .2s;
-          display:flex;flex-direction:column;cursor:pointer}}
-        .card:hover{{transform:translateY(-4px);box-shadow:var(--shadow-h)}}
+        .card{{background:var(--card);border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.04);
+          overflow:hidden;transition:transform .2s,box-shadow .2s;border:1px solid #f0f0f0;
+          display:flex;flex-direction:column;cursor:pointer;position:relative;}}
+        .card:hover{{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}}
 
-        .cimg{{width:100%;aspect-ratio:4/3;background:linear-gradient(135deg,#c8e6c9,#a5d6a7);
+        .btn-fav{{position:absolute;top:10px;left:10px;z-index:5;background:#fff;border:none;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 2px 6px rgba(0,0,0,.1);cursor:pointer;transition:transform 0.15s;}}
+        .btn-fav:active{{transform:scale(0.85)}}
+        
+        .b-disc{{position:absolute;top:10px;right:10px;z-index:5;background:#ef5350;color:#fff;
+          padding:4px 8px;border-radius:6px;font-size:.7rem;font-weight:800;letter-spacing:0.5px;}}
+
+        .cimg{{width:100%;aspect-ratio:1;background:#f5f5f5;
           display:flex;align-items:center;justify-content:center;font-size:3.2rem;
           position:relative;overflow:hidden;flex-shrink:0}}
         .cimg img{{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-          opacity:0;transition:opacity .3s,transform .35s}}
+          opacity:0;transition:opacity .3s,transform .4s}}
         .cimg img.loaded{{opacity:1}}
         .card:hover .cimg img{{transform:scale(1.05)}}
-        .cimg-em{{position:relative;z-index:1}}
+        .cimg-em{{position:relative;z-index:1;opacity:0.3}}
 
-        .badges{{position:absolute;top:9px;left:9px;right:9px;
-          display:flex;justify-content:space-between;align-items:flex-start}}
-        .b-cat{{background:rgba(27,67,50,.82);color:#fff;padding:3px 9px;
-          border-radius:999px;font-size:.62rem;font-weight:700;backdrop-filter:blur(4px);
-          text-transform:uppercase;letter-spacing:.4px}}
-        .b-diff{{padding:3px 9px;border-radius:999px;font-size:.66rem;font-weight:700;
-          backdrop-filter:blur(4px);white-space:nowrap}}
-        .d-facil   {{background:rgba(46,125,50,.85);color:#fff}}
-        .d-mod     {{background:rgba(230,119,0,.85);color:#fff}}
-        .d-avanc   {{background:rgba(183,28,28,.85);color:#fff}}
-        .b-disc{{position:absolute;bottom:9px;right:9px;background:#ef5350;color:#fff;
-          padding:2px 8px;border-radius:7px;font-size:.68rem;font-weight:800}}
+        .cbody{{padding:12px;flex:1;display:flex;flex-direction:column;gap:6px;}}
+        .cname{{font-size:.95rem;font-weight:700;color:#111;line-height:1.2;margin-bottom:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}}
+        .csub{{font-size:.75rem;color:#777;margin-bottom:4px;}}
+        
+        .price-row{{display:flex;align-items:baseline;gap:6px;margin-top:auto;}}
+        .price-c{{font-size:1.2rem;font-weight:800;color:var(--g-dark)}}
+        .price-o{{font-size:.8rem;color:#999;text-decoration:line-through}}
 
-        .cbody{{padding:13px 15px 15px;flex:1;display:flex;flex-direction:column;gap:9px}}
-        .cname{{font-size:.9rem;font-weight:700;color:#1a2e1a;line-height:1.3}}
-        .csub {{font-size:.7rem;color:#aaa;margin-top:1px}}
-        .price-row{{display:flex;align-items:baseline;gap:7px}}
-        .price-c{{font-size:1.1rem;font-weight:800;color:var(--g-dark)}}
-        .price-o{{font-size:.78rem;color:#bbb;text-decoration:line-through}}
-
-        /* ATRIBUTOS */
-        .attrs{{display:flex;flex-direction:column;gap:7px;margin-top:2px}}
-        .arow{{display:flex;align-items:center;gap:8px}}
-        .alabel{{width:56px;font-size:.65rem;font-weight:700;text-transform:uppercase;
-          letter-spacing:.5px;color:#aaa;flex-shrink:0}}
-
-        /* luz dots */
-        .luz-dots{{display:flex;gap:4px}}
-        .ldot{{width:21px;height:21px;border-radius:50%;display:flex;align-items:center;
-          justify-content:center;font-size:.88rem;border:2px solid transparent;transition:transform .15s}}
-        .l-off{{opacity:.18;filter:grayscale(1)}}
-        .l-sombra{{opacity:1;background:#eceff1;border-color:#90a4ae;transform:scale(1.1)}}
-        .l-meia  {{opacity:1;background:#fff8e1;border-color:#ffd54f;transform:scale(1.1)}}
-        .l-sol   {{opacity:1;background:#fff3e0;border-color:#ff8f00;transform:scale(1.1)}}
-        .luz-text{{font-size:.67rem;color:#aaa;margin-left:3px}}
-
-        /* drops */
-        .drops{{display:flex;gap:3px}}
-        .drop{{font-size:.95rem}}
-        .drop.on{{opacity:1}}
-        .drop.off{{opacity:.15;filter:grayscale(1)}}
-        .wlabel{{font-size:.68rem;color:#777;font-weight:600;margin-left:2px}}
-
-        /* terra pill */
-        .tpill{{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;
-          border-radius:999px;font-size:.68rem;font-weight:600}}
-        .tp-dren{{background:#efebe9;color:#5d4037}}
-        .tp-org {{background:#e8f5e9;color:#2e7d32}}
-        .tp-arg {{background:#fbe9e7;color:#bf360c}}
-        .tp-sub {{background:#e0f2f1;color:#00695c}}
-
-        /* dica */
-        .tip{{background:#f1f8e9;border-radius:9px;padding:7px 9px;
-          font-size:.71rem;color:#33691e;display:flex;gap:5px;align-items:flex-start;margin-top:2px}}
+        .card-tech{{display:flex;gap:12px;font-size:.8rem;color:#555;margin-top:6px;margin-bottom:12px;font-weight:500;}}
+        .card-tech span{{display:flex;align-items:center;gap:4px;}}
+        
+        .btn-add-card{{width:100%;padding:10px;background:#f5f5f5;color:var(--g-dark);border:1px solid #e0e0e0;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;transition:all 0.2s;}}
+        .btn-add-card:hover{{background:var(--g-pale);border-color:var(--g-light);color:var(--g-dark);}}
+        .btn-add-card.added{{background:var(--g-dark);color:#fff;border-color:var(--g-dark);}}
 
         /* EMPTY */
         .empty{{grid-column:1/-1;text-align:center;padding:60px 20px;color:#aaa}}
@@ -281,8 +249,9 @@ HTML = f"""<!DOCTYPE html>
 
         @media(max-width:600px){{
           .legend{{display:none}}
-          .grid{{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:11px;padding:0 12px 28px}}
-          .cname{{font-size:.8rem}}
+          .grid{{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:0 16px 32px}}
+          .cname{{font-size:.85rem}}
+          .filter-modal{{max-width:100%;}}
         }}
     </style>
 </head>
@@ -319,61 +288,81 @@ HTML = f"""<!DOCTYPE html>
       <div class="legend-g"><span class="legend-t">Cuidado</span><span class="legend-i">🟢 Facil</span><span class="legend-i">🟡 Moderado</span><span class="legend-i">🔴 Avancado</span></div>
     </div>
 
-    <div class="filters">
-      <div class="frow">
-        <div class="search-w"><input type="text" id="search" placeholder="Buscar planta..." oninput="af()"></div>
-        <div class="divid"></div>
-        <div class="fgroup">
-          <span class="flabel">Categoria</span>
-          <span class="chip" data-f="cat" data-v="Plantas de Interior" onclick="tc(this)">🪴 Interior</span>
-          <span class="chip" data-f="cat" data-v="Flores" onclick="tc(this)">🌸 Flores</span>
-          <span class="chip" data-f="cat" data-v="Arvores" onclick="tc(this)">🌳 Arvores</span>
-          <span class="chip" data-f="cat" data-v="Palmeiras" onclick="tc(this)">🌴 Palmeiras</span>
-          <span class="chip" data-f="cat" data-v="Suculentas e Cactos" onclick="tc(this)">🌵 Suculentas</span>
-          <span class="chip" data-f="cat" data-v="Gramineas e Bambus" onclick="tc(this)">🎋 Bambus</span>
-          <span class="chip" data-f="cat" data-v="Trepadeiras" onclick="tc(this)">🌿 Trepadeiras</span>
-          <span class="chip" data-f="cat" data-v="Samambaias e Fetos" onclick="tc(this)">🌾 Samambaias</span>
-          <span class="chip" data-f="cat" data-v="Ervas e Temperos" onclick="tc(this)">🌿 Ervas</span>
-        </div>
-        <div class="divid"></div>
-        <div class="fgroup">
-          <span class="flabel">☀️ Luz</span>
-          <span class="chip chip-sombra" data-f="luz" data-v="sombra" onclick="tc(this)">🌑 Sombra</span>
-          <span class="chip chip-meia" data-f="luz" data-v="meia-luz" onclick="tc(this)">🌤️ Meia-luz</span>
-          <span class="chip chip-sol" data-f="luz" data-v="sol pleno" onclick="tc(this)">☀️ Sol pleno</span>
-        </div>
-        <div class="divid"></div>
-        <div class="fgroup">
-          <span class="flabel">💧 Agua</span>
-          <span class="chip chip-baixa" data-f="umid" data-v="baixa" onclick="tc(this)">💧 Baixa</span>
-          <span class="chip chip-media" data-f="umid" data-v="media" onclick="tc(this)">💧💧 Media</span>
-          <span class="chip chip-alta" data-f="umid" data-v="alta" onclick="tc(this)">💧💧💧 Alta</span>
-        </div>
-        <div class="divid"></div>
-        <div class="fgroup">
-          <span class="flabel">🌱 Terra</span>
-          <span class="chip chip-dren" data-f="terra" data-v="drenada" onclick="tc(this)">🏖️ Drenada</span>
-          <span class="chip chip-org" data-f="terra" data-v="organica" onclick="tc(this)">🌱 Organica</span>
-          <span class="chip chip-arg" data-f="terra" data-v="argilosa" onclick="tc(this)">🟫 Argilosa</span>
-          <span class="chip chip-sub" data-f="terra" data-v="substrato" onclick="tc(this)">🪴 Substrato</span>
-        </div>
-        <div class="divid"></div>
-        <div class="fgroup">
-          <span class="flabel">⭐ Cuidado</span>
-          <span class="chip" data-f="diff" data-v="Facil" onclick="tc(this)">🟢 Facil</span>
-          <span class="chip" data-f="diff" data-v="Moderado" onclick="tc(this)">🟡 Moderado</span>
-          <span class="chip" data-f="diff" data-v="Avancado" onclick="tc(this)">🔴 Avancado</span>
-        </div>
-        <button class="btn-clear" onclick="clf()">✕ Limpar</button>
-      </div>
+    <div class="filters-top">
+      <div class="search-w"><input type="text" id="search" placeholder="Buscar plantas..." oninput="af()"></div>
+      <button class="btn-toggle-filters" onclick="toggleFilterModal()">⚙️ Filtros</button>
     </div>
+
+    <div class="active-filters-bar" id="activeFiltersBar" style="display:none;"></div>
 
     <div class="stats">
       <span><strong id="vcount">0</strong> plantas encontradas</span>
-      <div class="a-pills" id="apills"></div>
     </div>
 
     <div class="grid" id="grid"></div>
+
+    <!-- FILTER MODAL -->
+    <div class="filter-modal-overlay" id="filterModalOverlay" onclick="toggleFilterModal(event)">
+      <div class="filter-modal" id="filterModal">
+        <div class="fm-header">
+          <h3>Filtros</h3>
+          <button class="fm-close" onclick="toggleFilterModal({{force:true}})">✕</button>
+        </div>
+        <div class="fm-body">
+          <div class="fgroup">
+            <span class="flabel">🌱 Categoria</span>
+            <div class="chips-grid">
+              <span class="chip" data-f="cat" data-v="Plantas de Interior" onclick="tc(this)">Interior</span>
+              <span class="chip" data-f="cat" data-v="Flores" onclick="tc(this)">Flores</span>
+              <span class="chip" data-f="cat" data-v="Arvores" onclick="tc(this)">Árvores</span>
+              <span class="chip" data-f="cat" data-v="Palmeiras" onclick="tc(this)">Palmeiras</span>
+              <span class="chip" data-f="cat" data-v="Suculentas e Cactos" onclick="tc(this)">Suculentas</span>
+              <span class="chip" data-f="cat" data-v="Gramineas e Bambus" onclick="tc(this)">Bambus</span>
+              <span class="chip" data-f="cat" data-v="Trepadeiras" onclick="tc(this)">Trepadeiras</span>
+              <span class="chip" data-f="cat" data-v="Samambaias e Fetos" onclick="tc(this)">Samambaias</span>
+              <span class="chip" data-f="cat" data-v="Ervas e Temperos" onclick="tc(this)">Ervas</span>
+            </div>
+          </div>
+          <div class="fgroup">
+            <span class="flabel">☀️ Luz</span>
+            <div class="chips-grid">
+              <span class="chip" data-f="luz" data-v="sombra" onclick="tc(this)">Sombra</span>
+              <span class="chip" data-f="luz" data-v="meia-luz" onclick="tc(this)">Meia-luz</span>
+              <span class="chip" data-f="luz" data-v="sol pleno" onclick="tc(this)">Sol pleno</span>
+            </div>
+          </div>
+          <div class="fgroup">
+            <span class="flabel">💧 Água</span>
+            <div class="chips-grid">
+              <span class="chip" data-f="umid" data-v="baixa" onclick="tc(this)">Baixa</span>
+              <span class="chip" data-f="umid" data-v="media" onclick="tc(this)">Média</span>
+              <span class="chip" data-f="umid" data-v="alta" onclick="tc(this)">Alta</span>
+            </div>
+          </div>
+          <div class="fgroup">
+            <span class="flabel">🏖️ Tipo de Solo</span>
+            <div class="chips-grid">
+              <span class="chip" data-f="terra" data-v="drenada" onclick="tc(this)">Drenada</span>
+              <span class="chip" data-f="terra" data-v="organica" onclick="tc(this)">Orgânica</span>
+              <span class="chip" data-f="terra" data-v="argilosa" onclick="tc(this)">Argilosa</span>
+              <span class="chip" data-f="terra" data-v="substrato" onclick="tc(this)">Substrato</span>
+            </div>
+          </div>
+          <div class="fgroup">
+            <span class="flabel">⭐ Nível de Cuidado</span>
+            <div class="chips-grid">
+              <span class="chip" data-f="diff" data-v="Facil" onclick="tc(this)">Fácil</span>
+              <span class="chip" data-f="diff" data-v="Moderado" onclick="tc(this)">Moderado</span>
+              <span class="chip" data-f="diff" data-v="Avancado" onclick="tc(this)">Avançado</span>
+            </div>
+          </div>
+        </div>
+        <div class="fm-footer">
+          <button class="btn-clear" onclick="clf()">Limpar tudo</button>
+          <button class="btn-apply" onclick="toggleFilterModal({{force:true}})">Mostrar <span id="fmCount">0</span> plantas</button>
+        </div>
+      </div>
+    </div>
 </div>
 
 <div class="overlay" id="ov" onclick="cm(event)">
@@ -465,6 +454,15 @@ function card(p){{
   var luz=p.luz||[];
   var catNorm=norm(p.categoria);
 
+  var luzIcons='';
+  if(luz.includes('sombra')) luzIcons+='🌑';
+  if(luz.includes('meia-luz')) luzIcons+='🌤️';
+  if(luz.includes('sol pleno')) luzIcons+='☀️';
+  if(!luzIcons) luzIcons='🌤️';
+  
+  var dropCount=drops(p.umid_key), dropIcons='';
+  for(var i=0;i<dropCount;i++) dropIcons+='💧';
+
   var el=document.createElement('div');
   el.className='card';
   el.dataset.cat=catNorm;
@@ -474,24 +472,22 @@ function card(p){{
   el.dataset.diff=diff.l;
   el.dataset.name=norm(p.nome);
 
-  el.innerHTML='<div class="cimg">'
+  el.innerHTML='<button class="btn-fav" onclick="event.stopPropagation();this.innerHTML=\\\'❤️\\\';this.style.transform=\\\'scale(1.2)\\\';setTimeout(()=>this.style.transform=\\\'\\\',200)">🤍</button>'
+    +'<div class="cimg">'
     +'<span class="cimg-em">'+em+'</span>'
     +(p.imagens&&p.imagens[0]?'<img data-src="'+p.imagens[0]+'" alt="'+p.nome+'" onload="this.classList.add(\\\'loaded\\\')" onerror="this.style.display=\\\'none\\\'">':'')
-    +'<div class="badges"><span class="b-cat">'+p.categoria+'</span>'
-    +'<span class="b-diff '+diff.c+'">'+diff.i+' '+diff.l+'</span></div>'
     +(di?'<span class="b-disc">-'+di+'%</span>':'')
     +'</div>'
     +'<div class="cbody">'
-    +'<div><div class="cname">'+p.nome+'</div><div class="csub">'+(p.subcategoria||'')+'</div></div>'
+    +'<div><div class="cname">'+p.nome+'</div></div>'
     +'<div class="price-row"><span class="price-c">R$ '+fmtR(p.preco_atual)+'</span>'
     +(p.preco_original&&p.preco_original>p.preco_atual?'<span class="price-o">R$ '+fmtR(p.preco_original)+'</span>':'')
     +'</div>'
-    +'<div class="attrs">'
-    +'<div class="arow"><span class="alabel">Luz</span><div style="display:flex;align-items:center">'+buildLuzDots(luz)+'</div></div>'
-    +'<div class="arow"><span class="alabel">Agua</span><div style="display:flex;align-items:center;gap:4px">'+buildDrops(p.umid_key,false)+'</div></div>'
-    +'<div class="arow"><span class="alabel">Terra</span><span class="tpill '+ti.c+'">'+ti.i+' '+ti.l+'</span></div>'
+    +'<div class="card-tech">'
+    +'<span title="Luz: '+(luz.join(', ')||'Meia-luz')+'">'+luzIcons+' '+((luz[0]||'Meia').charAt(0).toUpperCase()+(luz[0]||'meia').slice(1))+'</span>'
+    +'<span title="Água: '+p.umid_key+'">'+dropIcons+' Rega '+(p.umid_key||'Média')+'</span>'
     +'</div>'
-    +'<div class="tip"><span style="flex-shrink:0">💡</span><span>'+getTip(p)+'</span></div>'
+    +'<button class="btn-add-card" onclick="event.stopPropagation();addToCart(this, \\''+p.id+'\\')">+ Adicionar</button>'
     +'</div>';
 
   el.addEventListener('click',function(){{openM(p)}});
@@ -514,6 +510,7 @@ function af(){{
     if(ok)v++;
   }});
   document.getElementById('vcount').textContent=v;
+  document.getElementById('fmCount').textContent=v;
   renderPills();
   var em=document.getElementById('empty-st');
   if(v===0){{
@@ -538,16 +535,23 @@ function clf(){{
   af();
 }}
 
+function toggleFilterModal(e){{
+  if(e&&e.force){{}} else if(e&&e.target&&e.target!==document.getElementById('filterModalOverlay'))return;
+  document.getElementById('filterModalOverlay').classList.toggle('open');
+}}
+
 function renderPills(){{
-  var c=document.getElementById('apills'); c.innerHTML='';
-  var L={{cat:'Cat',luz:'Luz',umid:'Agua',terra:'Terra',diff:'Cuidado'}};
+  var c=document.getElementById('activeFiltersBar'); c.innerHTML='';
+  var count=0;
   Object.keys(ACT).forEach(function(k){{
     ACT[k].forEach(function(v){{
-      var p=document.createElement('span');p.className='apill';
-      p.innerHTML=L[k]+': '+v+' <button onclick="rp(\\\''+k+'\\\',\\\''+v+'\\\')">x</button>';
+      count++;
+      var p=document.createElement('span');p.className='active-chip';
+      p.innerHTML=v+' <button onclick="rp(\\\''+k+'\\\',\\\''+v+'\\\')">✕</button>';
       c.appendChild(p);
     }});
   }});
+  c.style.display = count>0 ? 'flex' : 'none';
 }}
 
 function rp(f,v){{
@@ -555,6 +559,24 @@ function rp(f,v){{
   var el=document.querySelector('.chip[data-f="'+f+'"][data-v="'+v+'"]');
   if(el)el.classList.remove('active');
   af();
+}}
+
+function addToCart(btn, id){{
+  var p=PLANTS.find(x=>x.id===id);
+  if(!p)return;
+  if(window.Cart) Cart.add(p);
+  var orig = btn.innerHTML;
+  btn.innerHTML = '✔ Adicionado';
+  btn.classList.add('added');
+  
+  // Animate global cart icon if exists
+  var cartBadge = document.querySelector('.cart-count');
+  if(cartBadge){{
+    cartBadge.style.transform='scale(1.5)';
+    setTimeout(()=>{{cartBadge.style.transform='';}}, 300);
+  }}
+
+  setTimeout(()=>{{btn.innerHTML=orig;btn.classList.remove('added');}}, 1500);
 }}
 
 function openM(p){{

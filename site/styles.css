@@ -132,28 +132,50 @@ nav a:hover, nav a.active {
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
 .cart-btn {
-    background: linear-gradient(135deg, var(--green-medium), var(--green-dark));
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50% !important;
+    background: var(--green-dark);
     color: white !important;
-    padding: 10px 20px !important;
-    border-radius: 30px !important;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    border: none;
-    font-weight: 600;
-}
-.cart-count {
-    background: #ff6b6b;
-    color: white;
-    font-size: 0.7rem;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-size: 1.6rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    cursor: pointer;
+    border: none;
+    z-index: 1000;
+    padding: 0 !important;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+}
+.cart-btn:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.cart-btn:active {
+    transform: scale(0.9);
+}
+
+.cart-count {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    background: #ff4757;
+    color: white;
+    font-size: 0.75rem;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    padding: 0 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .gallery-main {
@@ -632,7 +654,91 @@ section { padding: 60px 24px; }
 
 @media (max-width: 768px) {
     .field-row { grid-template-columns: 1fr; }
-    .header-inner { padding: 10px 16px; }
+    .header-inner { 
+        padding: 10px 12px; 
+        gap: 12px;
+    }
     .hero h2 { font-size: 2rem; }
     .section-header h2 { font-size: 1.6rem; }
+    
+    /* Bottom Navigation Bar estilo App no mobile */
+    body {
+        padding-bottom: 70px; /* Espaço para a barra inferior */
+    }
+    #main-header nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 8px 10px;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom));
+        z-index: 1000;
+        border-top: 1px solid #eee;
+    }
+    
+    #main-header nav a, #main-header nav button, #userArea, #userArea a, #userArea button {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px !important;
+        font-size: 0.65rem !important;
+        padding: 0 !important;
+        background: transparent !important;
+        color: var(--text-medium) !important;
+        text-decoration: none;
+        border: none !important;
+        font-weight: 600;
+        line-height: 1.1;
+        white-space: nowrap;
+    }
+    
+    /* Remover o padding do userArea */
+    #userArea { gap: 0 !important; }
+    
+    #main-header nav a.active, #main-header nav a:hover {
+        color: var(--green-dark) !important;
+    }
+    
+    /* Injetar ícones no Mobile via pseudo-elementos */
+    #main-header nav a[href="index.html"]::before { content: '🏠'; font-size: 1.3rem; filter: saturate(0.8); }
+    #main-header nav a[href="catalogo.html"]::before { content: '📖'; font-size: 1.3rem; filter: saturate(0.8); }
+    #main-header nav a[href="index.html#entrega"]::before { content: '🚚'; font-size: 1.3rem; filter: saturate(0.8); }
+    
+    /* User Area Icons */
+    #userArea a[href="login.html"]::before { content: '👤'; font-size: 1.3rem; filter: saturate(0.8); }
+    #userArea a[href="meus-pedidos.html"]::before { content: '📦'; font-size: 1.3rem; filter: saturate(0.8); }
+    #userArea a[href="admin.html"]::before { content: '⚙️'; font-size: 1.3rem; filter: saturate(0.8); }
+    #userArea button::before { content: '🚪'; font-size: 1.3rem; filter: saturate(0.8); }
+
+    /* Ajuste do botão do carrinho - já tem o ícone no texto do HTML, mas o formato precisa alinhar */
+    .cart-btn {
+        flex-direction: column;
+        font-size: 0.65rem !important; 
+        position: relative;
+    }
+    
+    .cart-count {
+        position: absolute;
+        top: -4px;
+        right: -8px;
+        font-size: 0.65rem !important;
+        padding: 2px 6px !important;
+    }
+    
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+    .product-image-wrapper {
+        height: 140px;
+    }
+    .product-name {
+        font-size: 0.9rem;
+    }
 }
